@@ -3,12 +3,15 @@ var mysql = require('mysql');
 var router = express.Router();
 
 var connectionParams = {
-  host     : 'durok0.ckugbtodolrs.us-west-2.rds.amazonaws.com',
-  user     : 'eshiroma',
-  password : 'erikarules',
-  database : 'durok'
+  host: 'durok0.ckugbtodolrs.us-west-2.rds.amazonaws.com',
+  user: 'eshiroma',
+  password: 'erikarules',
+  database: 'durok'
 }
-router.model = {};
+router.model = {
+  players: {},
+  games: {}
+};
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -25,46 +28,93 @@ var renderIndex = function(domain) {
       return;
     }
 
-    connection.query('SELECT * from player', function(err, rows, fields) {
+    // Request player names and ids
+    connection.query('SELECT * from player', function(err, rows) {
       if (err) {
         console.log(err);
         connection.end();
       }
-      router.model.players = {};
+      var players = router.model.players;
       rows.forEach(function(row) {
         if (!row.deleted) {
-          router.model.players[row.id] = { name: row.name };
+          players[row.id] = {
+            name: row.name,
+            gameResults: []
+          };
         }
       });
       
-      console.log('\nPLAYERS:');
-      for (var playerId in router.model.players) {
-        console.log(router.model.players[playerId].name);
-      }
-
       // Request all games in the domain (all if default/zero)
       var gameQuery = 'SELECT * from game';
       if (domain && domain != 0) {
         gameQuery += ' where game.domain = ' + domain;
       }
-      connection.query(gameQuery, function(err, rows, fields) {
+      // start date and end date restrictions
+      connection.query(gameQuery, function(err, rows) {
         if (err) {
           console.log(err);
           connection.end();
           return;
         }
+        var games = router.model.games;
         rows.forEach(function(row) {
-          router.model.games = {};
           if (!row.deleted) {
-            router.model.games[row.id] = { date: row.date, playerCount: row.player_count };
+            games[row.id] = {
+              date: row.date,
+              playerCount: row.player_count,
+              players: []
+            };
           }
         });
-        console.log('\nGAMES:');
-        for (var gameId in router.model.games) {
-          var game = router.model.games[gameId];
-          console.log(game.date + ' (' + game.playerCount + ' players)');
+
+        // Request game results
+        var playerGameResultQuery = 'SELECT * from player_game_result';
+        if (domain && domain != 0) {
+          playerGameResultQuery += ' where player_game_result.domain = ' + domain;
         }
-        connection.end();
+        connection.query(playerGameResultQuery, function(err, rows) {
+          if (err) {
+            console.log(err);
+            connection.end();
+            return;
+          }
+
+          rows.forEach(function(row) {
+            if (!row.deleted) {
+              var isDurok = row.is_durok === 1;
+              if (isDurok) {
+                games[row.game_id].durokId = row.player_id;
+              }
+              games[row.game_id].players.push(row.player_id);
+              players[row.player_id].gameResults[row.game_id] = isDurok;
+            }
+          });
+          // data check: verify that playerCount matches number of recorded players
+          for (var gameId in games) {
+            if (games[gameId].playerCount != games[gameId].players.length) {
+              console.error('Player count mismatch for game ', gameId, ' ; actual is ', games[gameId].players.length);
+            }
+          }
+          
+          // Now print for debug purposes
+          console.log('\nPLAYERS:');
+          for (var playerId in players) {
+            var playerString = players[playerId].name + ': ';
+            for (var gameId in players[playerId].gameResults) {
+              playerString += gameId;
+              if (players[playerId].gameResults[gameId]) {
+                playerString += 'x  ';
+              }
+            }
+            console.log(playerString);
+          }
+          console.log('\nGAMES:');
+          for (var gameId in games) {
+            console.log(games[gameId].date + ': ' + games[gameId].players + ' (' + players[games[gameId].durokId].name + ')');
+          }
+  
+          connection.end();
+        });
       });
     });
   });
