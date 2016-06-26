@@ -1,0 +1,27 @@
+{
+  "name": "durok",
+  "version": "1.0.0",
+  "dependencies": {
+    "mysql": "^2.5.4"
+  },
+  "description": "Tracks game results for the game of Durok",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eshiroma/durok.git"
+  },
+  "keywords": [
+    "durok",
+    "durak",
+    "scores"
+  ],
+  "author": "Erika Shiroma",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/eshiroma/durok/issues"
+  },
+  "homepage": "https://github.com/eshiroma/durok#readme"
+}
