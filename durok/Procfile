@@ -1,1 +1,1 @@
-durok: npm start
+durok: node bin/www
