@@ -130,7 +130,6 @@ function Model() {
         && (!endDate || games[gameId].date <= endDate);
   }
 
-  // TODO: apply filter
   this.getPlayers = function(domainId, startDate, endDate) {
     var result = {};
     for (var playerId in players) {
