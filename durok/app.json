@@ -1,0 +1,7 @@
+{
+  "name": "Durok",
+  "description": "Tracks game results for the game of Durok",
+  "repository": "git+https://github.com/eshiroma/durok.git",
+  "logo": "http://node-js-sample.herokuapp.com/node.svg",
+  "keywords": ["node", "express", "durok", "durak", "scores", "cards"]
+}
