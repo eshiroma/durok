@@ -23,7 +23,6 @@ module.exports.init = init;
 // If any parameter is not provided, it is not used in filtering
 // TODO: add filtering for startDate/endDate
 var setData = function(domainId, startDate, endDate) {
-  domainId = 1;
   var connection = mysql.createConnection(connectionParams);
   connection.connect(function(err) {
     if (err) {
@@ -31,23 +30,15 @@ var setData = function(domainId, startDate, endDate) {
       return;
     }
 
-    // Request player data (for players with at least one game in the domain)
-    var playerQuery = 'SELECT * FROM players';
-    if (domainId && domainId != 0) {
-      playerQuery += ' JOIN player_game_results ON players.id = player_game_results.player_id '
-      + 'JOIN games ON player_game_results.game_id = games.id '
-      + 'WHERE players.deleted = 0 AND player_game_results.deleted = 0 AND games.deleted = 0 '
-      + 'AND games.domain_id = ' + domainId;
-    } else {
-      playerQuery += ' WHERE players.deleted = 0';
-    }
+    // Request player data (for all players)
+    var playerQuery = 'SELECT * FROM players WHERE players.deleted = 0';
     connection.query(playerQuery, function(err, rows) {
       if (err) {
         console.log(err);
         connection.end();
       }
       rows.forEach(function(row) {
-        players[row.player_id] = {
+        players[row.id] = {
           name: row.name,
           gameResults: {}
         };
@@ -56,7 +47,7 @@ var setData = function(domainId, startDate, endDate) {
       // Request all games in the domain (all if default/zero)
       var gameQuery = 'SELECT * FROM games WHERE games.deleted = 0';
       if (domainId && domainId != 0) {
-        //gameQuery += ' AND games.domain_id = ' + domainId;
+        gameQuery += ' AND games.domain_id = ' + domainId;
       }
       // start date and end date restrictions
       connection.query(gameQuery, function(err, rows) {
@@ -73,14 +64,12 @@ var setData = function(domainId, startDate, endDate) {
           };
         });
 
-        // Request game results
-        var playerGameResultQuery = 'SELECT * FROM player_game_results';
-        if (domainId && domainId != 0) {
-          playerGameResultQuery += ' INNER JOIN games ON player_game_results.game_id = games.id '
+        // Request all game results within the domain and start/end date
+        var playerGameResultQuery = 'SELECT * FROM player_game_results '
+          + 'INNER JOIN games ON player_game_results.game_id = games.id '
           + 'WHERE player_game_results.deleted = 0 AND games.deleted = 0 ';
-          + 'AND games.domain_id = ' + domainId;
-        } else {
-          playerGameResultQuery += ' WHERE player_game_results.deleted = 0';
+        if (domainId && domainId != 0) {
+          playerGameResultQuery += 'AND games.domain_id = ' + domainId;
         }
         connection.query(playerGameResultQuery, function(err, rows) {
           if (err) {
@@ -104,7 +93,7 @@ var setData = function(domainId, startDate, endDate) {
             }
           }
 
-          // Request game domains
+          // Request all game domains
           connection.query('SELECT * FROM game_domains WHERE game_domains.deleted = 0', function(err, rows) {
             if (err) {
               console.log(err);
@@ -114,22 +103,29 @@ var setData = function(domainId, startDate, endDate) {
             rows.forEach(function(row) {
               domains[row.id] = row.name;
             });
+
+            // Remove players that do not have any games in the domain
+            for (var playerId in players) {
+              if (Object.keys(players[playerId].gameResults).length === 0) {
+                delete players[playerId];
+              }
+            }
           
             // Now print for debug purposes
             console.log('\nPLAYERS:');
             for (var playerId in players) {
-              var playerString = players[playerId].name + ': ';
+              var playerString = players[playerId].name + ':';
               for (var gameId in players[playerId].gameResults) {
-                playerString += gameId;
+                playerString += ' ' + gameId;
                 if (players[playerId].gameResults[gameId]) {
-                  playerString += 'x  ';
+                  playerString += 'x';
                 }
               }
               console.log(playerString);
             }
             console.log('\nGAMES:');
             for (var gameId in games) {
-              console.log(games[gameId].date + ': ' + games[gameId].players + ' (' + players[games[gameId].durokId].name + ')');
+              console.log(games[gameId].date + ': ' + games[gameId].players + ' ' + players[games[gameId].durokId].name);
             }
             console.log('\nDOMAINS:');
             for (var domainId in domains) {
