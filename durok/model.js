@@ -2,8 +2,8 @@ var mysql = require('mysql');
 
 var connectionParams = {
   host: 'durok0.ckugbtodolrs.us-west-2.rds.amazonaws.com',
-  user: 'eshiroma',
-  password: 'erikarules',
+  user: 'durok_public',
+  password: 'durokrules',
   database: 'durok'
 }
 
@@ -103,14 +103,7 @@ function Model() {
               // Now print for debug purposes
               console.log('\nPLAYERS:');
               for (var playerId in players) {
-                var playerString = players[playerId].name + ':';
-                for (var gameId in players[playerId].gameResults) {
-                  playerString += ' ' + gameId;
-                  if (players[playerId].gameResults[gameId]) {
-                    playerString += 'x';
-                  }
-                }
-                console.log(playerString);
+                console.log(players[playerId].name + ': ' + players[playerId].games + ' (' + players[playerId].lostGames + ')');
               }
               console.log('\nGAMES:');
               for (var gameId in games) {
