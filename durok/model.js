@@ -7,151 +7,146 @@ var connectionParams = {
   database: 'durok'
 }
 
-var players = {};
-var games = {};
-var domains = {};
+function Model() {
+  var players = {};
+  var games = {};
+  var domains = {};
 
-// Initializes the model (using default data filters)
-// TODO: figure out a way to use setData in 'constructor'
-var init = function() {
-  setData();
-};
-module.exports.init = init;
+  var domainId = 0;
+  var startDate = undefined;
+  var endDate = undefined;
 
-// Initializes the model's dataset using the given domainId,
-// starting date (inclusive), and ending date (exclusive)
-// If any parameter is not provided, it is not used in filtering
-// TODO: add filtering for startDate/endDate
-var setData = function(domainId, startDate, endDate) {
-  var connection = mysql.createConnection(connectionParams);
-  connection.connect(function(err) {
-    if (err) {
-      console.error(err);
-      return;
-    }
-
-    // Request player data (for all players)
-    var playerQuery = 'SELECT * FROM players WHERE players.deleted = 0';
-    connection.query(playerQuery, function(err, rows) {
+  this.init = function(onDoneFunction) {
+    var connection = mysql.createConnection(connectionParams);
+    connection.connect(function(err) {
       if (err) {
-        console.log(err);
-        connection.end();
+        console.error(err);
+        return;
       }
-      rows.forEach(function(row) {
-        players[row.id] = {
-          name: row.name,
-          gameResults: {}
-        };
-      });
-      
-      // Request all games in the domain (all if default/zero)
-      var gameQuery = 'SELECT * FROM games WHERE games.deleted = 0';
-      if (domainId && domainId != 0) {
-        gameQuery += ' AND games.domain_id = ' + domainId;
-      }
-      // start date and end date restrictions
-      connection.query(gameQuery, function(err, rows) {
+
+      var playerQuery = 'SELECT * FROM players WHERE players.deleted = 0';
+      connection.query(playerQuery, function(err, rows) {
         if (err) {
           console.log(err);
           connection.end();
-          return;
         }
         rows.forEach(function(row) {
-          games[row.id] = {
-            date: row.date,
-            playerCount: row.player_count,
-            players: []
+          players[row.id] = {
+            name: row.name,
+            gameResults: {}
           };
         });
-
-        // Request all game results within the domain and start/end date
-        var playerGameResultQuery = 'SELECT * FROM player_game_results '
-          + 'INNER JOIN games ON player_game_results.game_id = games.id '
-          + 'WHERE player_game_results.deleted = 0 AND games.deleted = 0 ';
+        
+        var gameQuery = 'SELECT * FROM games WHERE games.deleted = 0';
         if (domainId && domainId != 0) {
-          playerGameResultQuery += 'AND games.domain_id = ' + domainId;
+          gameQuery += ' AND games.domain_id = ' + domainId;
         }
-        connection.query(playerGameResultQuery, function(err, rows) {
+        connection.query(gameQuery, function(err, rows) {
           if (err) {
             console.log(err);
             connection.end();
             return;
           }
-
           rows.forEach(function(row) {
-            var isDurok = row.is_durok === 1;
-            if (isDurok) {
-              games[row.game_id].durokId = row.player_id;
-            }
-            games[row.game_id].players.push(row.player_id);
-            players[row.player_id].gameResults[row.game_id] = isDurok;
+            games[row.id] = {
+              date: row.date,
+              domainId: row.domain_id,
+              playerCount: row.player_count,
+              players: []
+            };
           });
-          // data check: verify that playerCount matches number of recorded players
-          for (var gameId in games) {
-            if (games[gameId].playerCount != games[gameId].players.length) {
-              console.error('Player count mismatch for game ', gameId, ' ; actual is ', games[gameId].players.length);
-            }
-          }
 
-          // Request all game domains
-          connection.query('SELECT * FROM game_domains WHERE game_domains.deleted = 0', function(err, rows) {
+          // Request all game results within the domain and start/end date
+          var playerGameResultQuery = 'SELECT * FROM player_game_results WHERE player_game_results.deleted = 0';
+          connection.query(playerGameResultQuery, function(err, rows) {
             if (err) {
               console.log(err);
               connection.end();
               return;
             }
-            rows.forEach(function(row) {
-              domains[row.id] = row.name;
-            });
 
-            // Remove players that do not have any games in the domain
-            for (var playerId in players) {
-              if (Object.keys(players[playerId].gameResults).length === 0) {
-                delete players[playerId];
+            rows.forEach(function(row) {
+              var isDurok = row.is_durok === 1;
+              if (isDurok) {
+                games[row.game_id].durokId = row.player_id;
+              }
+              games[row.game_id].players.push(row.player_id);
+              players[row.player_id].gameResults[row.game_id] = isDurok;
+            });
+            // data check: verify that playerCount matches number of recorded players
+            for (var gameId in games) {
+              if (games[gameId].playerCount != games[gameId].players.length) {
+                console.error('Player count mismatch for game ', gameId, ' ; actual is ', games[gameId].players.length);
               }
             }
-          
-            // Now print for debug purposes
-            console.log('\nPLAYERS:');
-            for (var playerId in players) {
-              var playerString = players[playerId].name + ':';
-              for (var gameId in players[playerId].gameResults) {
-                playerString += ' ' + gameId;
-                if (players[playerId].gameResults[gameId]) {
-                  playerString += 'x';
+
+            connection.query('SELECT * FROM game_domains WHERE game_domains.deleted = 0', function(err, rows) {
+              if (err) {
+                console.log(err);
+                connection.end();
+                return;
+              }
+              rows.forEach(function(row) {
+                domains[row.id] = row.name;
+              });
+
+              // Remove players that do not have any games in the domain
+              for (var playerId in players) {
+                if (Object.keys(players[playerId].gameResults).length === 0) {
+                  delete players[playerId];
                 }
               }
-              console.log(playerString);
-            }
-            console.log('\nGAMES:');
-            for (var gameId in games) {
-              console.log(games[gameId].date + ': ' + games[gameId].players + ' ' + players[games[gameId].durokId].name);
-            }
-            console.log('\nDOMAINS:');
-            for (var domainId in domains) {
-              console.log(domainId + ': ' + domains[domainId]);
-            }
-    
-            connection.end();
+            
+              // Now print for debug purposes
+              console.log('\nPLAYERS:');
+              for (var playerId in players) {
+                var playerString = players[playerId].name + ':';
+                for (var gameId in players[playerId].gameResults) {
+                  playerString += ' ' + gameId;
+                  if (players[playerId].gameResults[gameId]) {
+                    playerString += 'x';
+                  }
+                }
+                console.log(playerString);
+              }
+              console.log('\nGAMES:');
+              for (var gameId in games) {
+                console.log(games[gameId].date + ': ' + games[gameId].players + ' ' + players[games[gameId].durokId].name);
+              }
+              console.log('\nDOMAINS:');
+              for (var domainId in domains) {
+                console.log(domainId + ': ' + domains[domainId]);
+              }
+              connection.end();
+
+              onDoneFunction();
+            });
           });
         });
       });
     });
-  });
-};
-module.exports.setData = setData;
+  };
 
-// Returns a map of playerId -> playerName for all players (in the domain)
-var getPlayers = function() {
-  var result = {};
-  for (var playerId in players) {
-    result[playerId] = players[playerId].name;
-  }
-};
-module.exports.getPlayers = getPlayers;
+  // Returns a map of playerId -> playerName for all players
+  this.getPlayers = function() {
+    var result = {};
+    for (var playerId in players) {
+      result[playerId] = players[playerId].name;
+    }
+    return result;
+  };
 
-// Returns a map of gameId -> isDurok for all of playerId's games
-var getPlayerGames = function(playerId) {
-
+  // Returns a map of gameId -> isDurok for all of playerId's games
+  this.getPlayerGames = function(playerId) {
+    var result = {};
+    for (var gameId in players[playerId].gameResults) {
+      // if (game is in date range)
+      if (this.domainId === 0 || games[gameId].domainId === domainId) {
+        result[gameId] = players[playerId].gameResults;
+      }
+    }
+    return result;
+  };
 };
-module.exports.getPlayerGames = getPlayerGames;
+
+module.exports = Model;
