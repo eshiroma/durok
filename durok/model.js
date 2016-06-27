@@ -39,7 +39,8 @@ function Model() {
           rows.forEach(function(row) {
             players[row.id] = {
               name: row.name,
-              gameResults: {}
+              games: [],
+              lostGames: []
             };
           });
           
@@ -73,10 +74,11 @@ function Model() {
                 var isDurok = row.is_durok === 1;
                 if (isDurok) {
                   games[row.game_id].durokId = row.player_id;
+                  players[row.player_id].lostGames.push(row.game_id);
                 }
                 // record game players
                 games[row.game_id].players.push(row.player_id);
-                players[row.player_id].gameResults[row.game_id] = isDurok;
+                players[row.player_id].games.push(row.game_id);
                 
                 // record player in domain
                 var domainId = games[row.game_id].domainId;
@@ -84,16 +86,16 @@ function Model() {
                   domains[domainId].players.push(row.player_id);
                 }
               });
+
               // data check: verify that playerCount matches number of recorded players
               for (var gameId in games) {
                 if (games[gameId].playerCount != games[gameId].players.length) {
                   console.error('Player count mismatch for game ', gameId, ' ; actual is ', games[gameId].players.length);
                 }
               }
-
               // Remove players that do not have any games in the domain
               for (var playerId in players) {
-                if (Object.keys(players[playerId].gameResults).length === 0) {
+                if (players[playerId].games.length === 0) {
                   delete players[playerId];
                 }
               }
@@ -118,6 +120,7 @@ function Model() {
               for (var domainId in domains) {
                 console.log(domainId + ': ' + domains[domainId].name);
               }
+              console.log('-------------------------');
               connection.end();
 
               onDoneFunction();
@@ -138,7 +141,12 @@ function Model() {
   this.getPlayers = function(domainId, startDate, endDate) {
     var result = {};
     for (var playerId in players) {
-      result[playerId] = players[playerId].name;
+      var gamesInDomainAdDateRange = players[playerId].games.filter(function(gameId) {
+        return gameInDomainAndDateRange(gameId, domainId, startDate, endDate);
+      });
+      if (gamesInDomainAdDateRange.length > 0) {
+        result[playerId] = players[playerId].name;
+      }
     }
     return result;
   };
@@ -148,13 +156,9 @@ function Model() {
       console.error("Invalid player id: ", playerId);
       return;
     }
-    var result = {};
-    for (var gameId in players[playerId].gameResults) {
-      if (gameInDomainAndDateRange(gameId)) {
-        result[gameId] = players[playerId].gameResults;
-      }
-    }
-    return result;
+    return players[playerId].games.filter(function(gameId) {
+      return gameInDomainAndDateRange(gameId, domainId, startDate, endDate);
+    });
   };
 
   this.getGames = function(domainId, startDate, endDate) {
@@ -171,7 +175,7 @@ function Model() {
     return {
       id: gameId,
       date: games[gameId].date,
-      domain: games[gameId].domain,
+      domain: games[gameId].domainId,
       players: games[gameId].players.slice(0),
       durokId: games[gameId].durokId
     };
