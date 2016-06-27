@@ -7,7 +7,7 @@ var bodyParser = require('body-parser');
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
-var model = require ('./model');
+var Model = require ('./model');
 
 var app = express();
 
@@ -57,7 +57,20 @@ app.use(function(err, req, res, next) {
   });
 });
 
-model.init();
-
+var model = new Model();
+model.init(function() {
+  console.log();
+  console.log(model.getPlayers());
+  console.log();
+  console.log(model.getPlayerGames(1));
+  console.log(model.getPlayerGames(2));
+  console.log(model.getPlayerGames(10));
+  console.log();
+  console.log(model.getGames());
+  console.log(model.getGames(2));
+  console.log();
+  console.log(model.getGameInfo(1));
+  console.log(model.getGameInfo(2));
+});
 
 module.exports = app;
