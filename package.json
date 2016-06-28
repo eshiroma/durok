@@ -1,15 +1,12 @@
 {
   "name": "durok",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "dependencies": {
     "express": "^4.13.3",
     "mysql": "^2.5.4"
   },
   "description": "Tracks game results for the card game Durok",
   "main": "app.js",
-  "scripts": {
-    "test": "test"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/eshiroma/durok.git"
@@ -25,9 +22,5 @@
     "rankings"
   ],
   "author": "Erika Shiroma",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/eshiroma/durok/issues"
-  },
-  "homepage": "https://github.com/eshiroma/durok#readme"
+  "license": "ISC"
 }
