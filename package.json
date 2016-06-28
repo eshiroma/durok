@@ -5,6 +5,9 @@
     "express": "^4.13.3",
     "mysql": "^2.5.4"
   },
+  "scripts": {
+    "start": "node app.js"
+  },
   "description": "Tracks game results for the card game Durok",
   "main": "app.js",
   "repository": {
