@@ -128,7 +128,15 @@ function Model() {
     return (!domainId || domainId === 0 || games[gameId].domainId === domainId)
         && (!startDate || startDate <= games[gameId].date)
         && (!endDate || games[gameId].date <= endDate);
-  }
+  };
+
+  this.getDomains = function() {
+    var result = {};
+    for (var domainId in domains) {
+      result[domainId] = domains[domainId].name;
+    }
+    return result;
+  };
 
   this.getPlayers = function(domainId, startDate, endDate) {
     var result = {};

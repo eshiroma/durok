@@ -1,19 +1,15 @@
+var Express = require("express");
 var Model = require("./model");
+var handler = require("./index.js");
 
-var app = require("express")();
+const portNumber = 3000;
+
+var app = Express();
 var model = new Model();
-var portNumber = 3000;
-
+app.set("model", model);
 
 model.init(function() {
-  app.get("/", function(request, response) {
-    var responseString = "";
-    var playerMap = model.getPlayers();
-    for (playerId in playerMap) {
-      responseString += playerMap[playerId] + "\n";
-    }
-    response.end(responseString);
-  });
+  app.get("/", handler.getIndex);
 
   app.listen(portNumber);
   console.log("Listening on port number ", portNumber);
