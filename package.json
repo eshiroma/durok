@@ -5,8 +5,8 @@
     "express": "^4.13.3",
     "mysql": "^2.5.4"
   },
-  "description": "Tracks game results for the game of Durok",
-  "main": "index.js",
+  "description": "Tracks game results for the card game Durok",
+  "main": "app.js",
   "scripts": {
     "test": "test"
   },
@@ -17,10 +17,15 @@
   "keywords": [
     "durok",
     "durak",
-    "scores"
+    "card",
+    "games",
+    "score",
+    "tracker",
+    "leaderboard",
+    "rankings"
   ],
   "author": "Erika Shiroma",
-  "license": "BSD-2-Clause",
+  "license": "ISC",
   "bugs": {
     "url": "https://github.com/eshiroma/durok/issues"
   },
