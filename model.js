@@ -125,13 +125,6 @@ function Model() {
   };
 
   var gameInDomainAndDateRange = function(gameId, domainId, startDate, endDate) {
-    if (startDate) {
-      console.log("startDate", startDate.getTime() <= games[gameId].date.getTime());
-    }
-    if (endDate) {
-      console.log("endDate", endDate.getTime() <= games[gameId].date.getTime());
-    }
-
     return (!domainId || domainId === 0 || games[gameId].domainId === domainId)
         && (!startDate || startDate.getTime() <= games[gameId].date.getTime())
         && (!endDate || games[gameId].date.getTime() <= endDate.getTime());
@@ -145,6 +138,7 @@ function Model() {
     return result;
   };
 
+  // playerId -> name
   this.getPlayers = function(domainId, startDate, endDate) {
     var result = {};
     for (var playerId in players) {
@@ -158,22 +152,40 @@ function Model() {
     return result;
   };
 
+  // { games: [gameId], losses: [gameId] }
   this.getPlayerGames = function(playerId, domainId, startDate, endDate) {
     if (!players[playerId]) {
       console.error("Invalid player id: ", playerId);
       return;
     }
-    return players[playerId].games.filter(function(gameId) {
+    var filteredGames = players[playerId].games.filter(function(gameId) {
       return gameInDomainAndDateRange(gameId, domainId, startDate, endDate);
     });
+    if (filteredGames.length > 0) {
+      var filteredLostGames = players[playerId].lostGames.filter(function(gameId) {
+        return gameInDomainAndDateRange(gameId, domainId, startDate, endDate);
+      });
+      return { games: filteredGames, lostGames: filteredLostGames };
+    }
   };
 
+  // playerId -> { games: [gameId], losses: [gameId] }
+  this.getPlayerSummaries = function(domainId, startDate, endDate) {
+    var result = {};
+    for (var playerId in players) {
+      result[playerId] = this.getPlayerGames(playerId, domainId, startDate, endDate);
+    }
+    return result;
+  };
+
+  // [gameId]
   this.getGames = function(domainId, startDate, endDate) {
     return Object.keys(games).filter(function(gameId) {
       return gameInDomainAndDateRange(gameId, domainId, startDate, endDate);
     });
   };
 
+  // { date: date, players: [playerId], durokId: playerId }
   this.getGameInfo = function(gameId) {
     if (!games[gameId]) {
       console.error("Invalid game id: ", gameId);
@@ -186,6 +198,17 @@ function Model() {
       players: games[gameId].players.slice(0),
       durokId: games[gameId].durokId
     };
+  };
+
+  // gameId -> { date: date, players: [playerId], durokId: playerId }
+  this.getAllGameInfo = function(domainId, startDate, endDate) {
+    var result = {};
+    for (gameId in games) {
+      if (gameInDomainAndDateRange(gameId, domainId, startDate, endDate)) {
+        result[gameId] = this.getGameInfo(gameId, domainId, startDate, endDate);
+      }
+    }
+    return result;
   };
 };
 

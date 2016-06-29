@@ -20,12 +20,8 @@ exports.getPlayers = function(req, res) {
 
 exports.getPlayerGames = function(req, res) {
   var playerId = req.params.id;
-  var domainId = req.query.domain ? Number(req.query.start) : undefined;
+  var domainId = req.query.domain ? Number(req.query.domain) : undefined;
   var startDate = req.query.start ? new Date(Number(req.query.start)) : undefined;
   var endDate = req.query.end ? new Date(Number(req.query.end)) : undefined;
-  console.log(playerId);
-  console.log(domainId);
-  console.log(startDate);
-  console.log(endDate);
   res.json(req.app.get("model").getPlayerGames(playerId, domainId, startDate, endDate));
 };
