@@ -125,9 +125,16 @@ function Model() {
   };
 
   var gameInDomainAndDateRange = function(gameId, domainId, startDate, endDate) {
+    if (startDate) {
+      console.log("startDate", startDate.getTime() <= games[gameId].date.getTime());
+    }
+    if (endDate) {
+      console.log("endDate", endDate.getTime() <= games[gameId].date.getTime());
+    }
+
     return (!domainId || domainId === 0 || games[gameId].domainId === domainId)
-        && (!startDate || startDate <= games[gameId].date)
-        && (!endDate || games[gameId].date <= endDate);
+        && (!startDate || startDate.getTime() <= games[gameId].date.getTime())
+        && (!endDate || games[gameId].date.getTime() <= endDate.getTime());
   };
 
   this.getDomains = function() {

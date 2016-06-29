@@ -9,6 +9,8 @@ app.set("model", model);
 
 model.init(function() {
   app.get("/", handler.getIndex);
+  app.get("/players", handler.getPlayers);
+  app.get("/playerGames/:id", handler.getPlayerGames);
 
   app.listen(port);
   console.log("Listening on port " + port);
