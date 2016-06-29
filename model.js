@@ -152,8 +152,8 @@ function Model() {
     return result;
   };
 
-  // { games: [gameId], losses: [gameId] }
-  this.getPlayerGames = function(playerId, domainId, startDate, endDate) {
+  // { name: playerName games: [gameId], losses: [gameId] }
+  this.getPlayerInfo = function(playerId, domainId, startDate, endDate) {
     if (!players[playerId]) {
       console.error("Invalid player id: ", playerId);
       return;
@@ -165,15 +165,19 @@ function Model() {
       var filteredLostGames = players[playerId].lostGames.filter(function(gameId) {
         return gameInDomainAndDateRange(gameId, domainId, startDate, endDate);
       });
-      return { games: filteredGames, lostGames: filteredLostGames };
+      return {
+        name: players[playerId].name,
+        games: filteredGames,
+        lostGames: filteredLostGames
+      };
     }
   };
 
   // playerId -> { games: [gameId], losses: [gameId] }
-  this.getAllPlayerGames = function(domainId, startDate, endDate) {
+  this.getAllPlayerInfo = function(domainId, startDate, endDate) {
     var result = {};
     for (var playerId in players) {
-      result[playerId] = this.getPlayerGames(playerId, domainId, startDate, endDate);
+      result[playerId] = this.getPlayerInfo(playerId, domainId, startDate, endDate);
     }
     return result;
   };

@@ -1,23 +1,22 @@
 var Express = require("express");
 var Model = require("./model");
-var controller = require("./controller");
 
 var app = Express();
 var model = new Model();
 var port = process.env.PORT || 3000;
-app.set("model", model);
 
 model.init(function() {
-  app.get("/", controller.getIndex);
-  
-  app.get("/players", controller.getPlayers);
-  app.get("/playerGames", controller.getAllPlayerGames);
-  app.get("/playerGames/:id", controller.getPlayerGames);
+  app.get("/", function(req, res) {
+    var domainId = req.query.domain ? Number(req.query.domain) : undefined;
+    var startDate = req.query.start ? new Date(Number(req.query.start)) : undefined;
+    var endDate = req.query.end ? new Date(Number(req.query.end)) : undefined;
 
-  app.get("/games", controller.getGames);
-  app.get("/gameInfo", controller.getGameAllGameInfo);
-  app.get("/gameInfo/:id", controller.getGameInfo);
-
+    res.json({
+      domains: model.getDomains(),
+      games: model.getAllGameInfo(domainId, startDate, endDate),
+      players: model.getAllPlayerInfo(domainId, startDate, endDate)
+    });
+  });
 
   app.listen(port);
   console.log("Listening on port " + port);
