@@ -8,9 +8,10 @@ var app = Express();
 var model = new Model();
 app.set("model", model);
 
-model.init(function() {
+/*model.init(function() {
   app.get("/", handler.getIndex);
 
   app.listen(portNumber);
   console.log("Listening on port number ", portNumber);
-});
+});*/
+app.get("/", function(req, res) { res.end("HI"); });
