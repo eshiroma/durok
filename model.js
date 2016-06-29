@@ -170,7 +170,7 @@ function Model() {
   };
 
   // playerId -> { games: [gameId], losses: [gameId] }
-  this.getPlayerSummaries = function(domainId, startDate, endDate) {
+  this.getAllPlayerGames = function(domainId, startDate, endDate) {
     var result = {};
     for (var playerId in players) {
       result[playerId] = this.getPlayerGames(playerId, domainId, startDate, endDate);
