@@ -87,10 +87,16 @@ function Model() {
                 }
               });
 
-              // data check: verify that playerCount matches number of recorded players
+              // data check: verify that playerCount matches number of recorded players,
+              // and that durokId is set
               for (var gameId in games) {
                 if (games[gameId].playerCount != games[gameId].players.length) {
                   console.error('Player count mismatch for game ', gameId, ' ; actual is ', games[gameId].players.length);
+                }
+                if (!games[gameId].durokId) {
+                  console.error('Missing durok id for game', gameId);
+                } else if (games[gameId].players.indexOf(games[gameId].durokId) < 0) {
+                  console.error('Invalid durok id of', games[gameId].durokId, 'for game', gameId);
                 }
               }
               // Remove players that do not have any games in the domain
@@ -107,7 +113,7 @@ function Model() {
               }
               console.log('\nGAMES:');
               for (var gameId in games) {
-                console.log(games[gameId].date + ': ' + games[gameId].players + ' ' + players[games[gameId].durokId].name);
+                console.log(games[gameId].date.getTime() + ': ' + games[gameId].players + ' ' + players[games[gameId].durokId].name, games[gameId].durokId);
               }
               console.log('\nDOMAINS:');
               for (var domainId in domains) {
@@ -158,17 +164,16 @@ function Model() {
       console.error("Invalid player id: ", playerId);
       return;
     }
-    var filteredGames = players[playerId].games.filter(function(gameId) {
-      return gameInDomainAndDateRange(gameId, domainId, startDate, endDate);
+    var gameResults = {};
+    players[playerId].games.forEach(function(gameId) {
+      if (gameInDomainAndDateRange(gameId, domainId, startDate, endDate)) {
+        gameResults[gameId] = playerId === games[gameId].durokId;
+      }
     });
-    if (filteredGames.length > 0) {
-      var filteredLostGames = players[playerId].lostGames.filter(function(gameId) {
-        return gameInDomainAndDateRange(gameId, domainId, startDate, endDate);
-      });
+    if (Object.keys(gameResults).length > 0) {
       return {
         name: players[playerId].name,
-        games: filteredGames,
-        lostGames: filteredLostGames
+        gameResults: gameResults
       };
     }
   };
