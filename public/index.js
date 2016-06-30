@@ -23,6 +23,7 @@ var onData = function(model) {
       name: model.players[playerId].name,
       plays: 0,
       losses: 0,
+      notLosses: 0,
       notLossScore: 0,
       playScore: 0
     };
@@ -37,16 +38,22 @@ var onData = function(model) {
         scores[playerId].notLossScore -= 1;
         scores[playerId].playScore -= 1 - (1 / numPlayers);
       } else {
+        scores[playerId].notLosses++;
         scores[playerId].notLossScore += 1 / (numPlayers - 1);
         scores[playerId].playScore += 1 / numPlayers;
       }
     });
   }
 
-  renderTable("notLossScore", scores, model);
+  for (playerId in scores) {
+    scores[playerId].notLossPercent = scores[playerId].notLosses / scores[playerId].plays;
+  }
+
+  renderTable("notLossScore", scores);
+  renderTableFilters(model);
 }
 
-var renderTable = function(sortByStat, scores, model) {
+var renderTable = function(sortByStat, scores) {
   var tableBodyHtml = ""
   var rankedPlayerIds = Object.keys(scores).sort(function(playerId, otherId) {
     switch(sortByStat) {
@@ -86,26 +93,48 @@ var renderTable = function(sortByStat, scores, model) {
     + '</tr>';
   });
   $("tbody").html(tableBodyHtml);
+};
 
+var renderTableFilters = function(model) {
   var optionCount = 1;
   var domainSelect = document.getElementById("domainSelect");
   for (domainId in model.domains) {
     domainSelect.options[optionCount] = new Option(model.domains[domainId], domainId, false, domainId == model.domainId);
     optionCount++;
   }
-};
+
+  if (model.startDate) {
+    $(".startDate").datepicker("setDate", new Date(model.startDate));
+  }
+  if (model.endDate) {
+    $(".endDate").datepicker("setData", new Date(model.endDate));
+  }
+}
 
 var onFormSubmit = function(form) {
   var domainId = form.domainSelect.options[form.domainSelect.selectedIndex].value;
 
-  var startDateSplit = form.startDate.value.split("-");
-  var endDateSplit = form.endDate.value.split("-");
-  if (startDateSplit.length >= 3) {
-    var startDate = new Date(startDateSplit[0], startDateSplit[1] - 1, startDateSplit[2]);
+  var startDate = stringToDate(form.startDate.value);
+  var endDate = stringToDate(form.endDate.value);
+  if (!startDate) {
+    startDate = 0;
   }
-  if (endDateSplit.length >= 3) {
-    var endDate = new Date(endDateSplit[0], endDateSplit[1] - 1, endDateSplit[2]);
+  if (!endDate) {
+    endDate = new Date().getTime();
   }
-  
+
   render("notLossScore", domainId, startDate.getTime(), endDate.getTime());
 };
+
+var stringToDate = function(dateString) {
+  var dateStringSplit = form.endDate.value.split("-");
+  if (dateStringSplit.length >= 3) {
+    return new Date(dateStringSplit[0], dateStringSplit[1] - 1, dateStringSplit[2]).getTime();
+  } else {
+    return;
+  }
+}
+
+var dateToString = function(date) {
+  return date.getFullYear + "-" + (date.getMonth() + 1) + "-" + date.getDate();
+}

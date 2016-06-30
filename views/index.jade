@@ -12,8 +12,8 @@ body
       form(name="scoreFilters", onsubmit="onFormSubmit(this); return false;" method="get")
         select(id="domainSelect" name="domainId")
           option(value="0") All
-        input(type="date", name="startDate")
-        input(type="date", name="endDate")
+        input(class="startDate" type="date", name="startDate")
+        input(class="endDate" type="date", name="endDate")
         input(type="submit", value="submit")
 
       table(class="scoreTable")
