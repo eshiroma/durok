@@ -158,7 +158,7 @@ function Model() {
     return result;
   };
 
-  // { name: playerName games: [gameId], losses: [gameId] }
+  // { name: playerName, gamesResults: gameId -> isDurok }
   this.getPlayerInfo = function(playerId, domainId, startDate, endDate) {
     if (!players[playerId]) {
       console.error("Invalid player id: ", playerId);
@@ -178,7 +178,7 @@ function Model() {
     }
   };
 
-  // playerId -> { games: [gameId], losses: [gameId] }
+  // playerId -> { name: playerName, gamesResults: gameId -> isDurok }
   this.getAllPlayerInfo = function(domainId, startDate, endDate) {
     var result = {};
     for (var playerId in players) {

@@ -6,8 +6,20 @@ head
   script(src="index.js")
 
 body
-    h1="Durok Scores"
-    div(class="data")
+    h1 Durok Scores
 
-    h2="Players"
-    div(class="playerList")
+    div(class="scores")
+      table(class="scoreTable")
+        thead
+          tr
+            td Player
+            td Plays
+            td Not Losses
+            td Losses
+            td Not Loss Score
+            td Play Score
+            td Not Loss %
+        tbody
+
+    h2 Raw JSON
+    div(class="data")
