@@ -13,6 +13,7 @@ var onFilterButtonClick = function() {
   var filters = document.getElementById("scoreFilters");
   var domainId = filters.domainSelect.options[filters.domainSelect.selectedIndex].value;
 
+  // TODO: handle time zone issues (we're spanning different dates here...)
   var startDate = filters.startDate.value ? new Date(filters.startDate.value) : new Date(0);
   var endDate = filters.endDate.value ? new Date(filters.endDate.value) : new Date();
 

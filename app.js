@@ -25,7 +25,6 @@ model.init(function() {
     var scores = {};
 
     for (playerId in players) {
-      console.log(playerId);
       scores[playerId] = {
         name: players[playerId].name,
         plays: 0,
@@ -53,7 +52,7 @@ model.init(function() {
     }
 
     for (playerId in scores) {
-      scores[playerId].notLossPercent = scores[playerId].notLosses / scores[playerId].plays;
+      scores[playerId].notLossPercent = 100 * scores[playerId].notLosses / scores[playerId].plays;
     }
 
     res.json({

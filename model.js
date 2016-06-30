@@ -22,7 +22,7 @@ function Model() {
 
       connection.query('SELECT * FROM game_domains WHERE game_domains.deleted = 0', function(err, rows) {
         if (err) {
-          console.log(err);
+          console.error(err);
           connection.end();
           return;
         }
@@ -33,7 +33,7 @@ function Model() {
         var playerQuery = 'SELECT * FROM players WHERE players.deleted = 0';
         connection.query(playerQuery, function(err, rows) {
           if (err) {
-            console.log(err);
+            console.error(err);
             connection.end();
           }
           rows.forEach(function(row) {
@@ -47,7 +47,7 @@ function Model() {
           var gameQuery = 'SELECT * FROM games WHERE games.deleted = 0';
           connection.query(gameQuery, function(err, rows) {
             if (err) {
-              console.log(err);
+              console.error(err);
               connection.end();
               return;
             }
@@ -64,7 +64,7 @@ function Model() {
             var playerGameResultQuery = 'SELECT * FROM player_game_results WHERE player_game_results.deleted = 0';
             connection.query(playerGameResultQuery, function(err, rows) {
               if (err) {
-                console.log(err);
+                console.error(err);
                 connection.end();
                 return;
               }
@@ -171,7 +171,6 @@ function Model() {
       }
     });
     if (Object.keys(gameResults).length > 0) {
-      console.log(Object.keys(gameResults));
       return {
         name: players[playerId].name,
         gameResults: gameResults
@@ -216,7 +215,6 @@ function Model() {
   // gameId -> { date: date, players: [playerId], durokId: playerId }
   this.getAllGameInfo = function(domainId, startDate, endDate) {
     var result = {};
-    console.log(startDate, endDate);
     for (gameId in games) {
       if (gameInDomainAndDateRange(gameId, domainId, startDate, endDate)) {
         result[gameId] = this.getGameInfo(gameId, domainId, startDate, endDate);
