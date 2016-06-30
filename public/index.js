@@ -8,11 +8,30 @@ var render = function(domainId, startDate, endDate) {
     start: startDate,
     end: endDate
   };
-  $.get("/gameData", params, onData);
+  $.get("/gameData", params, function(model) {
+    var scores = parseScores(model);
+    var tableBodyHtml = ""
+    var rankedPlayerIds = Object.keys(scores).sort(function(playerId, otherId) {
+      return scores[otherId].notLossScore - scores[playerId].notLossScore;
+    });
+    rankedPlayerIds.forEach(function(playerId) {
+      tableBodyHtml += '{{#scores}}'
+      + '  <tr class="playerRow">'
+      + '    <td class="playerCol">' + scores[playerId].name + '</td>'
+      + '    <td class="playsCol">' + scores[playerId].plays + '</td>'
+      + '    <td class="notLossesCol">' + scores[playerId].notLosses + '</td>'
+      + '    <td class="lossesCol">' + scores[playerId].losses + '</td>'
+      + '    <td class="notLossScoreCol">' + scores[playerId].notLossScore + '</td>'
+      + '    <td class="playScoreCol">' + scores[playerId].playScore + '</td>'
+      + '    <td class="notLossPercentCol">' + scores[playerId].notLossPercent + '</td>'
+      + '  </tr>'
+      + '{{/scores}}'
+    });
+    $("tbody").html(tableBodyHtml);
+  });
 };
 
-var onData = function(model) {
-  // Calculate each player's scores
+var parseScores = function(model) {
   var scores = {};
   for (playerId in model.players) {
     scores[playerId] = {
@@ -44,31 +63,5 @@ var onData = function(model) {
     scores[playerId].notLossPercent = 100 * scores[playerId].notLosses / scores[playerId].plays;
   }
 
-
-  var tableBodyHtml = ""
-  var rankedPlayerIds = Object.keys(scores).sort(function(playerId, otherId) {
-    return scores[otherId].notLossScore - scores[playerId].notLossScore;
-  });
-  rankedPlayerIds.forEach(function(playerId) {
-    tableBodyHtml += '{{#scores}}'
-    + '  <tr class="playerRow">'
-    + '    <td>' + scores[playerId].name + '</td>'
-    + '    <td>' + scores[playerId].plays + '</td>'
-    + '    <td>' + scores[playerId].notLosses + '</td>'
-    + '    <td>' + scores[playerId].losses + '</td>'
-    + '    <td>' + scores[playerId].notLossScore + '</td>'
-    + '    <td>' + scores[playerId].playScore + '</td>'
-    + '    <td>' + scores[playerId].notLossPercent + '</td>'
-    + '  </tr>'
-    + '{{/scores}}'
-  });
-  $("tbody").html(tableBodyHtml);
-
-  var $playerRows = {};
-  for (playerId in model.players) {
-    // TODO: replace with jade template
-    $(".playerList").append('<div class="playerRow"' + playerId + '>' + model.players[playerId].name + '</div');
-  }
-
-  $(".data").append(JSON.stringify(scores));
-};
+  return scores;
+}
