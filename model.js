@@ -171,6 +171,7 @@ function Model() {
       }
     });
     if (Object.keys(gameResults).length > 0) {
+      console.log(Object.keys(gameResults));
       return {
         name: players[playerId].name,
         gameResults: gameResults
@@ -182,7 +183,10 @@ function Model() {
   this.getAllPlayerInfo = function(domainId, startDate, endDate) {
     var result = {};
     for (var playerId in players) {
-      result[playerId] = this.getPlayerInfo(playerId, domainId, startDate, endDate);
+      var playerInfo = this.getPlayerInfo(playerId, domainId, startDate, endDate);
+      if (playerInfo) {
+        result[playerId] = playerInfo;
+      }
     }
     return result;
   };
@@ -212,6 +216,7 @@ function Model() {
   // gameId -> { date: date, players: [playerId], durokId: playerId }
   this.getAllGameInfo = function(domainId, startDate, endDate) {
     var result = {};
+    console.log(startDate, endDate);
     for (gameId in games) {
       if (gameInDomainAndDateRange(gameId, domainId, startDate, endDate)) {
         result[gameId] = this.getGameInfo(gameId, domainId, startDate, endDate);

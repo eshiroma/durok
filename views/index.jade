@@ -9,12 +9,12 @@ body
     h1 Durok Scores
 
     div(class="scores")
-      form(name="scoreFilters", onsubmit="onFormSubmit(this); return false;" method="get")
-        select(id="domainSelect" name="domainId")
+      form(id="scoreFilters", onsubmit="return false;")
+        select(id="domainSelect", name="domainId")
           option(value="0") All
-        input(class="startDate" type="date", name="startDate")
-        input(class="endDate" type="date", name="endDate")
-        input(type="submit", value="submit")
+        input(class="startDate", type="date", name="startDate")
+        input(class="endDate", type="date", name="endDate")
+        button(id="submitButton") Filter data
 
       table(class="scoreTable")
         thead
