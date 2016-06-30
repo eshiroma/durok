@@ -20,6 +20,9 @@ model.init(function() {
     var endDate = req.query.end ? new Date(Number(req.query.end)) : undefined;
 
     res.json({
+      domainId: domainId,
+      startDate: startDate,
+      endDate: endDate,
       domains: model.getDomains(),
       games: model.getAllGameInfo(domainId, startDate, endDate),
       players: model.getAllPlayerInfo(domainId, startDate, endDate)
