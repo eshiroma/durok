@@ -1,6 +1,9 @@
 var mysql = require('mysql');
 var readline = require('readline');
 
+var domains = {};
+var players = {};
+
 const commands = {
   QUIT: { name: "quit", key: "q" },
   VIEW_COMMANDS: { name: "view commands", key: "c" },
@@ -11,8 +14,15 @@ const commands = {
   ADD_GAME: { name: "add game", key: "g" }
 }
 
-var domains = {};
-var players = {};
+const domainQuery = 'SELECT * FROM game_domains WHERE game_domains.deleted = 0';
+const playerQuery = 'SELECT * FROM players WHERE players.deleted = 0';
+
+var insertDomainQuery = function(domainName) { 
+  return 'INSERT INTO game_domains (name) values ("' + domainName + '")';
+}
+var insertPlayerQuery = function(playerName) { 
+  return 'INSERT INTO players (name) values ("' + playerName + '")';
+}
 
 
 // Prompt for password and establish db connection
@@ -35,7 +45,6 @@ passwordRl.question("Please enter password: ", function(password) {
     }
 
     // Initialize stored data
-    var domainQuery = 'SELECT * FROM game_domains WHERE game_domains.deleted = 0';
     connection.query(domainQuery, function(err, rows) {
       if (err) {
         console.error(err);
@@ -48,7 +57,6 @@ passwordRl.question("Please enter password: ", function(password) {
         domains[row.name] = row.id;
       });
 
-      var playerQuery = 'SELECT * FROM players WHERE players.deleted = 0';
       connection.query(playerQuery, function(err, rows) {
         if (err) {
           console.error(err);
@@ -77,42 +85,103 @@ passwordRl.question("Please enter password: ", function(password) {
 var prompt = function(rl, connection) {
   rl.question("\nEnter a command: ", function(commandInput) {
     switch(commandInput) {
-      case commands["QUIT"].key: quit(rl, connection); break;
-      case commands["VIEW_COMMANDS"].key: printCommands(); prompt(rl, connection); break;
-      case commands["VIEW_DOMAINS"].key: printKeys(domains); prompt(rl, connection); break;
-      case commands["VIEW_PLAYERS"].key: printKeys(players); prompt(rl, connection); break;
-      case commands["ADD_DOMAIN"].key: addDomain(rl, connection); break;
-      case commands["ADD_PLAYER"].key: addPlayer(rl, connection); break;
-      case commands["ADD_GAME"].key: addGame(rl, connection); break;
+      case commands["QUIT"].key:
+        quit(rl, connection);
+        break;
+      case commands["VIEW_COMMANDS"].key:
+        printCommands();
+        prompt(rl, connection);
+        break;
+      case commands["VIEW_DOMAINS"].key:
+        printKeys(domains);
+        prompt(rl, connection);
+        break;
+      case commands["VIEW_PLAYERS"].key:
+        printKeys(players);
+        prompt(rl, connection);
+        break;
+      case commands["ADD_DOMAIN"].key:
+        addDomain(rl, connection);
+        break;
+      case commands["ADD_PLAYER"].key:
+        addPlayer(rl, connection);
+        break;
+      case commands["ADD_GAME"].key:
+        addGame(rl, connection);
+        break;
     }
   });
 };
 
-var quit = function(rl, connection) {
+var quit = function(rl, connection, unsuccessful) {
   connection.end();
   rl.close();
-  process.exit();
+  if (unsuccessful) {
+    process.exit(1);
+  } else {
+    process.exit();
+  }
 }
 
 var printCommands = function() {
   console.log("Commands:")
   for (command in commands) {
-    console.log("(" + commands[command].key + ") " + commands[command].name);
+    console.log("  (" + commands[command].key + ") " + commands[command].name);
   }
 };
 
 var printKeys = function(map) {
   Object.keys(map).forEach(function(key) {
-    console.log(key);
+    console.log("  " + key);
   }); 
 };
 
 var addDomain = function(rl, connection) {
-  console.log("add a domain!");
+  rl.question("  Enter domain name: ", function(domainName) {
+    if (domains[domainName]) {
+      console.log("  Unable to add domain; name already in use");
+      prompt(rl, connection);
+    } else {
+      connection.query(insertDomainQuery(domainName), function(err, info) {
+        if (err) {
+          console.error(err);
+          quit(rl, connection, true);
+        }
+        // Now re-query and update domain cache
+        connection.query(domainQuery, function(err, rows) {
+          if (err) {
+            console.error(err);
+            quit(rl, connection, true);
+          }
+          domains = {};
+          rows.forEach(function(row) {
+            domains[row.name] = row.id;
+          });
+
+          prompt(rl, connection);
+        });
+      });
+    }
+  });
 };
 
 var addPlayer = function(rl, connection) {
-  console.log("add a player!");
+  rl.question("  Enter player name: ", function(playerName) {
+    if (players[playerName]) {
+      console.log("  Unable to add player; name already in use");
+      prompt(rl, connection);
+    } else {
+      connection.query(insertPlayerQuery(playerName), function(err, info) {
+        if (err) {
+          console.error(err);
+          quit(rl, connection, true);
+        }
+        console.log(info);
+        // Now re-query and update domain cache
+
+      });
+    }
+  });
 };
 
 var addGame = function(rl, connection) {
