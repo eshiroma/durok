@@ -40,16 +40,13 @@ passwordRl.question("Please enter password: ", function(password) {
 
   connection.connect(function(err) {
     if (err) {
-      console.error(err);
-      process.exit(1);
+      quit(null, null, err);
     }
 
     // Initialize stored data
     connection.query(domainQuery, function(err, rows) {
       if (err) {
-        console.error(err);
-        connection.end();
-        process.exit(1);
+        quit(connection, null, err);
       }
 
       // NOTE: this requires domain names to be unique
@@ -59,9 +56,7 @@ passwordRl.question("Please enter password: ", function(password) {
 
       connection.query(playerQuery, function(err, rows) {
         if (err) {
-          console.error(err);
-          connection.end();
-          process.exit(1);
+          quit(connection, null, err);
         }
 
         // NOTE: this requires player names to be unique
@@ -76,47 +71,52 @@ passwordRl.question("Please enter password: ", function(password) {
           output: process.stdout
         });
 
-        prompt(rl, connection);
+        prompt(connection, rl);
       });
     });
   });
 });
 
-var prompt = function(rl, connection) {
+var prompt = function(connection, rl) {
   rl.question("\nEnter a command: ", function(commandInput) {
     switch(commandInput) {
       case commands["QUIT"].key:
-        quit(rl, connection);
+        quit(connection, rl);
         break;
       case commands["VIEW_COMMANDS"].key:
         printCommands();
-        prompt(rl, connection);
+        prompt(connection, rl);
         break;
       case commands["VIEW_DOMAINS"].key:
         printKeys(domains);
-        prompt(rl, connection);
+        prompt(connection, rl);
         break;
       case commands["VIEW_PLAYERS"].key:
         printKeys(players);
-        prompt(rl, connection);
+        prompt(connection, rl);
         break;
       case commands["ADD_DOMAIN"].key:
-        addDomain(rl, connection);
+        addDomain(connection, rl);
         break;
       case commands["ADD_PLAYER"].key:
-        addPlayer(rl, connection);
+        addPlayer(connection, rl);
         break;
       case commands["ADD_GAME"].key:
-        addGame(rl, connection);
+        addGame(connection, rl);
         break;
     }
   });
 };
 
-var quit = function(rl, connection, unsuccessful) {
-  connection.end();
-  rl.close();
-  if (unsuccessful) {
+var quit = function(connection, rl, err) {
+  if (connection) {
+    connection.end();
+  }
+  if (rl) {
+    rl.close();
+  }
+  if (err) {
+    console.error(err);
     process.exit(1);
   } else {
     process.exit();
@@ -136,54 +136,60 @@ var printKeys = function(map) {
   }); 
 };
 
-var addDomain = function(rl, connection) {
+var addDomain = function(connection, rl) {
   rl.question("  Enter domain name: ", function(domainName) {
     if (domains[domainName]) {
       console.log("  Unable to add domain; name already in use");
-      prompt(rl, connection);
+      prompt(connection, rl);
     } else {
       connection.query(insertDomainQuery(domainName), function(err, info) {
         if (err) {
-          console.error(err);
-          quit(rl, connection, true);
+          quit(connection, rl, err);
         }
         // Now re-query and update domain cache
         connection.query(domainQuery, function(err, rows) {
           if (err) {
-            console.error(err);
-            quit(rl, connection, true);
+            quit(connection, rl, err);
           }
           domains = {};
           rows.forEach(function(row) {
             domains[row.name] = row.id;
           });
 
-          prompt(rl, connection);
+          prompt(connection, rl);
         });
       });
     }
   });
 };
 
-var addPlayer = function(rl, connection) {
+var addPlayer = function(connection, rl) {
   rl.question("  Enter player name: ", function(playerName) {
     if (players[playerName]) {
       console.log("  Unable to add player; name already in use");
-      prompt(rl, connection);
+      prompt(connection, rl);
     } else {
       connection.query(insertPlayerQuery(playerName), function(err, info) {
         if (err) {
-          console.error(err);
-          quit(rl, connection, true);
+          quit(connection, rl, err);
         }
-        console.log(info);
-        // Now re-query and update domain cache
+        // Now re-query and update player cache
+        connection.query(playerQuery, function(err, rows) {
+          if (err) {
+            quit(connection, rl, err);
+          }
+          players = {};
+          rows.forEach(function(row) {
+            players[row.name] = row.id;
+          });
 
+          prompt(connection, rl);
+        });
       });
     }
   });
 };
 
-var addGame = function(rl, connection) {
+var addGame = function(connection, rl) {
   console.log("add a game!");
 }
