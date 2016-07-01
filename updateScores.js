@@ -26,9 +26,9 @@ var insertDomainQuery = function(domainName) {
 var insertPlayerQuery = function(playerName) { 
   return 'INSERT INTO players (name) values ("' + playerName + '")';
 };
-var insertGameQuery = function(gameDate, playerCount) {
-  return 'INSERT INTO games (date, player_count) values ("' + gameDate + '",'
-    + player_count + ')';
+var insertGameQuery = function(gameDate, domainId, playerCount) {
+  return 'INSERT INTO games (date, domain_id, player_count) values ("' + gameDate + '",'
+    + domainId + ',' + player_count + ')';
 };
 var insertPlayerGameResultQuery = function(gameId, playerCount, playerId, isDurok) {
   var isDurokString = isDurok ? 1 : 0;
@@ -210,33 +210,38 @@ var addGame = function(connection, rl) {
     if (!dateString) {
       prompt(connection, rl);
     } else {
-      console.log(dateString);
-      // TODO: get game domain 
-      rl.question("  Enter number of players: ", function(numPlayersString) {
-        var playerCount = Number(numPlayersString);
-        if (isNaN(playerCount)) {
-          console.error("  Unable to add game; NaN number of players was entered");
-          prompt(connection, rl);
-        } else if (playerCount < MIN_PLAYER_COUNT || playerCount > MAX_PLAYER_COUNT) {
-          console.error("  Unable to add game; number of players must be between "
-            + MIN_PLAYER_COUNT + " and " + MAX_PLAYER_COUNT);
+      r1.question("  Enter domain name (optional): ", function(domainName) {
+        if (domainName && Object.keys(domains).indexOf(domainName) < 0) {
+          console.error("  Unable to add game; invalid domain name provided");
           prompt(connection, rl);
         } else {
-          rl.question("  Enter player name of durok: ", function(durokName) {
-            durokName = durokName.trim();
-            if (Object.keys(players).indexOf(durokName) < 0) {
-              console.error("  Unable to add game; invalid durok player name");
+          rl.question("  Enter number of players: ", function(numPlayersString) {
+            var playerCount = Number(numPlayersString);
+            if (isNaN(playerCount)) {
+              console.error("  Unable to add game; NaN number of players was entered");
+              prompt(connection, rl);
+            } else if (playerCount < MIN_PLAYER_COUNT || playerCount > MAX_PLAYER_COUNT) {
+              console.error("  Unable to add game; number of players must be between "
+                + MIN_PLAYER_COUNT + " and " + MAX_PLAYER_COUNT);
               prompt(connection, rl);
             } else {
-              var gameDetails = {
-                date: dateString,
-                domain: "All",
-                playerCount: playerCount,
-                durokName: durokName,
-                playerNames: [durokName]
-              };
-              promptForPlayerName(connection, rl, gameDetails);
-            } 
+              rl.question("  Enter player name of durok: ", function(durokName) {
+                durokName = durokName.trim();
+                if (Object.keys(players).indexOf(durokName) < 0) {
+                  console.error("  Unable to add game; invalid durok player name");
+                  prompt(connection, rl);
+                } else {
+                  var gameDetails = {
+                    dateString: dateString,
+                    domainName: domainName,
+                    playerCount: playerCount,
+                    durokName: durokName,
+                    playerNames: [durokName]
+                  };
+                  promptForPlayerName(connection, rl, gameDetails);
+                } 
+              });
+            }
           });
         }
       }); 
@@ -244,16 +249,48 @@ var addGame = function(connection, rl) {
   });
 };
 
+var writePlayerGameResult = function(connection, rl, gameDetails, playerGameResultIds) {
+  if (playerGameResultIds.length >= gameDetails.playerCount) {
+    console.log("  Game write successful");
+    prompt(connection, rl);
+  } else {
+    var i = playerGameResultIds.length + 1;
+    var currentPlayer = gameDetails.playerNames[i];
+    var currentPlayerId = players[currentPlayer];
+    var isDurok = gameDetails.durokName === currentPlayer;
+    var query = insertPlayerGameResultQuery(gameDetails.gameId, gameDetails.playerCount, currentPlayerId, isDurok);
+    connection.query(query, function(err, info) {
+      if (err) {
+        console.error("  Game write failed; aborting...");
+        // TODO: mark all previously written rows as 'deleted'
+        // in final deletion callback, call quit(connection, rl, err);
+      }
+      var playerGameResultId = info.SOMETHING_FOR_THE_ROW_ID;
+      playerGameResultIds.push(playerGameResultId);
+      writePlayerGameResult(connection, rl, gameDetails, playerGameResultIds);
+    });
+};
+
 var promptForPlayerName = function(connection, rl, gameDetails) {
   if (gameDetails.playerNames.length >= gameDetails.playerCount) {
     console.log("  Game details:");
     console.log("    Date (YYYY-MM-DD): " + gameDetails.date);
-    console.log("    Domain: " + gameDetails.domain);
+    console.log("    Domain: " + gameDetails.domainName);
     console.log("    Durok: " + gameDetails.durokName);
-    console.log("    Other players: " + gameDetails.playerNames.slice(1));
+    console.log("    Other player(s): " + gameDetails.playerNames.slice(1));
     rl.question("  Game details correct? (y/n) ", function(confirmation) {
       if (confirmation === "y" || confirmation === "Y") {
-        console.log("  GONNA WRITE THE GAME NOW!");
+        var date = gameDetails.date;
+        var domainId = gameDetails.domainName ? domains[gameDetails.domainName] : 0;
+        connection.query(insertGameQuery(date, domainId, gameDetails.playerCount), function(err, info) {
+          if (err) {
+            quit(connection, rl, err);
+          }
+          gameDetails.gameId = info.SOMETHING_FOR_THE_GAME_ID;
+          var playerGameResultIds = [];
+          // TODO: set stuff to deleted if any of the playerGameResult writes fails
+          writePlayerGameResult(connection, rl, gameDetails, playerGameResultIds);
+        });
       } else {
         console.log("  Aborting game write");
         prompt(connection, rl);
