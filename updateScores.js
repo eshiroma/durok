@@ -1,6 +1,6 @@
 var mysql = require('mysql');
 var readline = require('readline');
-
+var Writable = require('stream').Writable;
 
 var domains = {};
 var players = {};
@@ -34,13 +34,20 @@ var insertPlayerGameResultQuery = function(gameId, playerCount, playerId, isDuro
   var isDurokString = isDurok ? 1 : 0;
   return 'INSERT INTO player_game_results (game_id, player_count, player_id, is_durok) values ('
     + gameId + ',' + player_count + ',' + player_id + ',' + isDurokString + ')';
-}
+};
 
 // Prompt for password and establish db connection
 // TODO: hide password characters
 // TODO: wrap executing code in a function, and export
-var passwordRl = readline.createInterface({ input: process.stdin, output: process.stdout });
-passwordRl.question("Please enter password: ", function(password) {
+var muteableStdout = new Writable({ write: function() {} });
+var passwordRl = readline.createInterface({
+  input: process.stdin,
+  output: muteableStdout,
+  terminal: true
+});
+console.log("Please enter password: ");
+passwordRl.question("", function(password) {
+  console.log("hi there", password);
   passwordRl.close();
 
   var connection = mysql.createConnection({
@@ -82,6 +89,7 @@ passwordRl.question("Please enter password: ", function(password) {
           input: process.stdin,
           output: process.stdout
         });
+        console.log("Login successful");
 
         prompt(connection, rl);
       });
@@ -135,7 +143,7 @@ var quit = function(connection, rl, err) {
   } else {
     process.exit();
   }
-}
+};
 
 var printCommands = function() {
   console.log("Commands:")
@@ -269,6 +277,7 @@ var writePlayerGameResult = function(connection, rl, gameDetails, playerGameResu
       playerGameResultIds.push(playerGameResultId);
       writePlayerGameResult(connection, rl, gameDetails, playerGameResultIds);
     });
+  }
 };
 
 var promptForPlayerName = function(connection, rl, gameDetails) {
@@ -339,7 +348,7 @@ var parseDateInput = function(dateInput) {
 
 var sqlDateStringFromDate = function(date) {
   return dateString = date.getFullYear() + "-" + zeroPad(date.getMonth() + 1, 2)
-        + "-" + zeroPad(date.getDate(), 2);
+    + "-" + zeroPad(date.getDate(), 2);
 };
 
 var zeroPad = function(x, n) {
