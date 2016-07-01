@@ -68,22 +68,25 @@ passwordRl.question("Please enter password: ", function(password) {
           output: process.stdout
         });
 
-        rl.question("\nEnter a command: ", function(commandInput) {
-          switch(commandInput) {
-            case commands["QUIT"].key: quit(rl, connection); break;
-            case commands["VIEW_COMMANDS"].key: printCommands(); break;
-            case commands["VIEW_DOMAINS"].key: printKeys(domains); break;
-            case commands["VIEW_PLAYERS"].key: printKeys(players); break;
-            case commands["ADD_DOMAIN"].key: addDomain(rl, connection); break;
-            case commands["ADD_PLAYER"].key: addPlayer(rl, connection); break;
-            case commands["ADD_GAME"].key: addGame(rl, connection); break;
-          }          
-        });
-      
+        prompt(rl, connection);
       });
     });
   });
 });
+
+var prompt = function(rl, connection) {
+  rl.question("\nEnter a command: ", function(commandInput) {
+    switch(commandInput) {
+      case commands["QUIT"].key: quit(rl, connection); break;
+      case commands["VIEW_COMMANDS"].key: printCommands(); prompt(rl, connection); break;
+      case commands["VIEW_DOMAINS"].key: printKeys(domains); prompt(rl, connection); break;
+      case commands["VIEW_PLAYERS"].key: printKeys(players); prompt(rl, connection); break;
+      case commands["ADD_DOMAIN"].key: addDomain(rl, connection); break;
+      case commands["ADD_PLAYER"].key: addPlayer(rl, connection); break;
+      case commands["ADD_GAME"].key: addGame(rl, connection); break;
+    }
+  });
+};
 
 var quit = function(rl, connection) {
   connection.end();
