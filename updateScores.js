@@ -37,8 +37,6 @@ var insertPlayerGameResultQuery = function(gameId, playerCount, playerId, isDuro
 };
 
 // Prompt for password and establish db connection
-// TODO: hide password characters
-// TODO: wrap executing code in a function, and export
 var muteableStdout = new Writable({ write: function() {} });
 var passwordRl = readline.createInterface({
   input: process.stdin,
