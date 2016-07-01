@@ -1,6 +1,7 @@
 var mysql = require('mysql');
 var readline = require('readline');
 
+
 var domains = {};
 var players = {};
 
@@ -13,6 +14,8 @@ const commands = {
   ADD_PLAYER: { name: "add player", key: "P" },
   ADD_GAME: { name: "add game", key: "g" }
 }
+const MIN_PLAYER_COUNT = 2;
+const MAX_PLAYER_COUNT = 8;
 
 const domainQuery = 'SELECT * FROM game_domains WHERE game_domains.deleted = 0';
 const playerQuery = 'SELECT * FROM players WHERE players.deleted = 0';
@@ -35,6 +38,7 @@ var insertPlayerGameResultQuery = function(gameId, playerCount, playerId, isDuro
 
 // Prompt for password and establish db connection
 // TODO: hide password characters
+// TODO: wrap executing code in a function, and export
 var passwordRl = readline.createInterface({ input: process.stdin, output: process.stdout });
 passwordRl.question("Please enter password: ", function(password) {
   passwordRl.close();
@@ -86,6 +90,8 @@ passwordRl.question("Please enter password: ", function(password) {
 });
 
 var prompt = function(connection, rl) {
+  // TODO: see if can have multiple readlines from stdin at once,
+  // since different completion functions are required
   rl.question("\nEnter a command: ", function(commandInput) {
     switch(commandInput) {
       case commands["QUIT"].key:
@@ -199,32 +205,100 @@ var addPlayer = function(connection, rl) {
 };
 
 var addGame = function(connection, rl) {
-  console.log("add a game!");
   rl.question("  Enter game date ('today', MM/DD, or MM/DD/YYYY): ", function(dateInput) {
-    var dateString;
-    if (dateInput === "today") {
-      dateString = sqlDateStringFromDate(new Date());
+    var dateString = parseDateInput(dateInput);
+    if (!dateString) {
+      prompt(connection, rl);
     } else {
-      var dateInputSplit = dateInput.split("/");
-      if (dateInputSplit.length === 2 || dateInputSplit.length === 3) {
-        var month = Number(dateInputSplit[0]);
-        var day = Number(dateInputSplit[1]);
-        var year = dateInputSplit.length === 3 ? dateNumber(dateInputSplit[2]) : new Date().getFullYear();
-        if (isNan(month) || isNan(day) || isNan(year)) {
-          console.log("  Unable to add game; date contained non-numbers");
+      console.log(dateString);
+      // TODO: get game domain 
+      rl.question("  Enter number of players: ", function(numPlayersString) {
+        var playerCount = Number(numPlayersString);
+        if (isNaN(playerCount)) {
+          console.error("  Unable to add game; NaN number of players was entered");
+          prompt(connection, rl);
+        } else if (playerCount < MIN_PLAYER_COUNT || playerCount > MAX_PLAYER_COUNT) {
+          console.error("  Unable to add game; number of players must be between "
+            + MIN_PLAYER_COUNT + " and " + MAX_PLAYER_COUNT);
           prompt(connection, rl);
         } else {
-          var dateString = sqlDateStringFromDate(new Date(year, month, day));
+          rl.question("  Enter player name of durok: ", function(durokName) {
+            durokName = durokName.trim();
+            if (Object.keys(players).indexOf(durokName) < 0) {
+              console.error("  Unable to add game; invalid durok player name");
+              prompt(connection, rl);
+            } else {
+              var gameDetails = {
+                date: dateString,
+                domain: "All",
+                playerCount: playerCount,
+                durokName: durokName,
+                playerNames: [durokName]
+              };
+              promptForPlayerName(connection, rl, gameDetails);
+            } 
+          });
         }
+      }); 
+    }
+  });
+};
+
+var promptForPlayerName = function(connection, rl, gameDetails) {
+  if (gameDetails.playerNames.length >= gameDetails.playerCount) {
+    console.log("  Game details:");
+    console.log("    Date (YYYY-MM-DD): " + gameDetails.date);
+    console.log("    Domain: " + gameDetails.domain);
+    console.log("    Durok: " + gameDetails.durokName);
+    console.log("    Other players: " + gameDetails.playerNames.slice(1));
+    rl.question("  Game details correct? (y/n) ", function(confirmation) {
+      if (confirmation === "y" || confirmation === "Y") {
+        console.log("  GONNA WRITE THE GAME NOW!");
       } else {
-        console.log("  Unable to add game; incorrecty formatted date");
+        console.log("  Aborting game write");
         prompt(connection, rl);
       }
-    }
+    });
 
-    console.log(dateString);
-  });
-}
+  } else {
+    var currPlayerCount = gameDetails.playerNames.length;
+    rl.question("  Enter next player name (#"+ (currPlayerCount + 1) + "): ", function(playerName) {
+      playerName = playerName.trim();
+      if (Object.keys(players).indexOf(playerName) < 0) {
+        console.error("  Unable to add game; invalid player name");
+        prompt(connection, rl);
+      } else if (gameDetails.playerNames.indexOf(playerName) >= 0) {
+        console.error("  Unable to add game; duplicate player name provided");
+        prompt(connection, rl);
+      } else {
+        gameDetails.playerNames.push(playerName);
+        console.log(gameDetails.playerNames.length);
+        promptForPlayerName(connection, rl, gameDetails);
+      }
+    });
+  }
+};
+
+var parseDateInput = function(dateInput) {
+  if (dateInput === "today") {
+    return sqlDateStringFromDate(new Date());
+  }
+  var dateInputSplit = dateInput.split("/");
+  if (dateInputSplit.length === 2 || dateInputSplit.length === 3) {
+    var month = Number(dateInputSplit[0]);
+    var day = Number(dateInputSplit[1]);
+    var year = dateInputSplit.length === 3 ? dateNumber(dateInputSplit[2]) : new Date().getFullYear();
+    if (isNaN(month) || isNaN(day) || isNaN(year)) {
+      console.error("  Unable to add game; date contained non-numbers");
+      return;
+    } else {
+      return sqlDateStringFromDate(new Date(year, month, day));
+    }
+  } else {
+    console.error("  Unable to add game; incorrecty formatted date");
+    return;
+  }
+};
 
 var sqlDateStringFromDate = function(date) {
   return dateString = date.getFullYear() + "-" + zeroPad(date.getMonth() + 1, 2)
