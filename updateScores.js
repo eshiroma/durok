@@ -36,6 +36,19 @@ var insertPlayerGameResultQuery = function(gameId, playerCount, playerId, isDuro
     + gameId + ',' + playerCount + ',' + playerId + ',' + isDurokString + ');';
 };
 
+var completerFunction = function(map) {
+  return function(input) {
+    var completions = Object.keys(map).sort();
+    var hits = completions.filter(function(c) {
+      if (c.indexOf(input) === 0) {
+        return c;
+      }
+    });
+    // show all completions if none found
+    return [hits && hits.length ? hits : completions, input];
+  }
+};
+
 // Prompt for password and establish db connection
 var muteableStdout = new Writable({ write: function() {} });
 var passwordRl = readline.createInterface({
@@ -122,6 +135,9 @@ var prompt = function(connection) {
       case commands["ADD_GAME"].key:
         addGame(connection);
         break;
+      default:
+        console.log("Invalid command received (" + commandInput + ")");
+        prompt(connection);
     }
   });
 };
@@ -154,7 +170,8 @@ var printKeys = function(map) {
 var addDomain = function(connection) {
   var domainRl = readline.createInterface({
     input: process.stdin,
-    output: process.stdout
+    output: process.stdout,
+    completer: completerFunction(domains)
   });
   domainRl.question("  Enter domain name: ", function(domainName) {
     domainRl.close();
@@ -186,7 +203,8 @@ var addDomain = function(connection) {
 var addPlayer = function(connection) {
   var playerRl = readline.createInterface({
     input: process.stdin,
-    output: process.stdout
+    output: process.stdout,
+    completer: completerFunction(players)
   });
   playerRl.question("  Enter player name: ", function(playerName) {
     playerRl.close();
@@ -228,7 +246,8 @@ var addGame = function(connection) {
     } else {
       var domainRl = readline.createInterface({
         input: process.stdin,
-        output: process.stdout
+        output: process.stdout,
+        completer: completerFunction(domains)
       });
       domainRl.question("  Enter domain name (optional): ", function(domainName) {
         domainRl.close();
@@ -253,7 +272,8 @@ var addGame = function(connection) {
             } else {
               var playerRl = readline.createInterface({
                 input: process.stdin,
-                output: process.stdout
+                output: process.stdout,
+                completer: completerFunction(players)
               });
               playerRl.question("  Enter player name of durok: ", function(durokName) {
                 playerRl.close();
@@ -329,7 +349,8 @@ var promptForPlayerName = function(connection, gameDetails) {
           gameDetails.gameId = info.SOMETHING_FOR_THE_GAME_ID;
           var playerGameResultIds = [];
           // TODO: set stuff to deleted if any of the playerGameResult writes fails
-          writePlayerGameResult(connection, gameDetails, playerGameResultIds);
+          console.log("(write stuff here)");
+          // writePlayerGameResult(connection, gameDetails, playerGameResultIds);
         });
       } else {
         console.log("  Aborting game write");
@@ -341,7 +362,8 @@ var promptForPlayerName = function(connection, gameDetails) {
     var currPlayerCount = gameDetails.playerNames.length;
     var playerRl = readline.createInterface({
       input: process.stdin,
-      output: process.stdout
+      output: process.stdout,
+      completer: completerFunction(players)
     });
     playerRl.question("  Enter next player name (#"+ (currPlayerCount + 1) + "): ", function(playerName) {
       playerRl.close();
