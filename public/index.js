@@ -7,8 +7,6 @@ $(document).ready(function() {
   $("#submitButton").click(onFilterButtonClick);
 });
 
-var model = {};
-
 var onFilterButtonClick = function() {
   var filters = document.getElementById("scoreFilters");
   var domainId = filters.domainSelect.options[filters.domainSelect.selectedIndex].value;
@@ -27,7 +25,6 @@ var render = function(sortByStat, domainId, startDate, endDate) {
     end: endDate
   };
   $.get("/gameData", params, function(model) {
-    console.log("onData");
     renderTable("notLossScore", model.scores);
     renderTableFilters(model);
   });
@@ -82,4 +79,8 @@ var renderTableFilters = function(model) {
     domainSelect.options[optionCount] = new Option(model.domains[domainId], domainId, false, domainId == model.domainId);
     optionCount++;
   }
-}
+};
+
+var refreshCache = function() {
+
+};

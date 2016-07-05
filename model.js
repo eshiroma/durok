@@ -8,6 +8,7 @@ var connectionParams = {
 }
 
 function Model() {
+  this.cacheDate = new Date();
   var players = {};
   var games = {};
   var domains = {};
