@@ -30,10 +30,18 @@ var insertGameQuery = function(gameDate, domainId, playerCount) {
   return 'INSERT INTO games (date, domain_id, player_count) values ("' + gameDate + '",'
     + domainId + ',' + playerCount + ');';
 };
-var insertPlayerGameResultQuery = function(gameId, playerCount, playerId, isDurok) {
-  var isDurokString = isDurok ? 1 : 0;
-  return 'INSERT INTO player_game_results (game_id, player_count, player_id, is_durok) values ('
-    + gameId + ',' + playerCount + ',' + playerId + ',' + isDurokString + ');';
+var deleteGameQuery = function(gameId) {
+  return 'UPDATE games SET deleted="1" WHERE id=' + gameId + ';';
+};
+var insertPlayerGameResultQuery = function(gameId, durokId, otherPlayerIds) {
+  var playerCount = otherPlayerIds.length + 1;
+  var result = 'INSERT INTO player_game_results (game_id, player_count, player_id, is_durok) values '
+    + ',(' + gameId + ',' + playerCount + ',' + durokId + ',1)';
+  otherPlayerIds.forEach(function(playerId) {
+    result += ', (' + gameId + ',' + playerCount + ',' + playerId + ',0)';
+  });
+  console.log(result);
+  return result + ';';
 };
 
 var completerFunction = function(map) {
@@ -102,15 +110,13 @@ passwordRl.question("", function(password) {
 });
 
 var prompt = function(connection) {
-  // TODO: see if can have multiple readlines from stdin at once,
-  // since different completion functions are required
   var promptRl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
   });
   promptRl.question("\nEnter a command: ", function(commandInput) {
     promptRl.close();
-    switch(commandInput) {
+    switch(commandInput.trim()) {
       case commands["QUIT"].key:
         quit(connection);
         break;
@@ -179,7 +185,7 @@ var addDomain = function(connection) {
       console.log("  Unable to add domain; name already in use");
       prompt(connection);
     } else {
-      connection.query(insertDomainQuery(domainName), function(err, info) {
+      connection.query(insertDomainQuery(domainName), function(err, result) {
         if (err) {
           quit(connection, err);
         }
@@ -212,7 +218,7 @@ var addPlayer = function(connection) {
       console.log("  Unable to add player; name already in use");
       prompt(connection);
     } else {
-      connection.query(insertPlayerQuery(playerName), function(err, info) {
+      connection.query(insertPlayerQuery(playerName), function(err, result) {
         if (err) {
           quit(connection, err);
         }
@@ -300,64 +306,58 @@ var addGame = function(connection) {
   });
 };
 
-var writePlayerGameResult = function(connection, gameDetails, playerGameResultIds) {
-  if (playerGameResultIds.length >= gameDetails.playerCount) {
-    console.log("  Game write successful");
-    prompt(connection);
-  } else {
-    var i = playerGameResultIds.length + 1;
-    var currentPlayer = gameDetails.playerNames[i];
-    var currentPlayerId = players[currentPlayer];
-    var isDurok = gameDetails.durokName === currentPlayer;
-    var query = insertPlayerGameResultQuery(gameDetails.gameId, gameDetails.playerCount, currentPlayerId, isDurok);
-    connection.query(query, function(err, info) {
-      if (err) {
-        console.error("  Game write failed; aborting...");
-        // TODO: mark all previously written rows as 'deleted'
-        // in final deletion callback, call quit(connection, err);
-      }
-      console.log(info);
-      // TODO: make this a single write!!!
-      var playerGameResultId = info.SOMETHING_FOR_THE_ROW_ID;
-      playerGameResultIds.push(playerGameResultId);
-      writePlayerGameResult(connection, gameDetails, playerGameResultIds);
-    });
-  }
+var writeGame = function(connection, gameDetails) {
+  var rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+  console.log("  Game details:");
+  console.log("    Date (YYYY-MM-DD): " + gameDetails.dateString);
+  console.log("    Domain: " + gameDetails.domainName);
+  console.log("    Durok: " + gameDetails.durokName);
+  console.log("    Other player(s): " + gameDetails.playerNames.slice(1));
+  rl.question("  Game details correct? (y/n) ", function(confirmation) {
+    rl.close();
+    if (confirmation === "y" || confirmation === "Y") {
+      var date = gameDetails.dateString;
+      var domainId = gameDetails.domainName ? domains[gameDetails.domainName] : 0;
+      connection.query(insertGameQuery(date, domainId, gameDetails.playerCount), function(err, result) {
+        if (err) {
+          quit(connection, err);
+        }
+        gameDetails.gameId = result.insertId;
+
+        var durokId = players[gameDetails.durokName];
+        var otherPlayerIds = gameDetails.playerNames.slice(1).map(function(playerName) {
+          return players[playerName];
+        });
+        connection.query(insertPlayerGameResultQuery(gameDetails.gameId, durokId, otherPlayerIds), function(err, result) {
+          if (err) {
+            // Attempt to delete the game entry before quitting
+            console.error("  Game write failed; aborting...");
+            connection.query(deleteGameQuery(gameDetails.gameId), function(err, result) {
+              if (err) {
+                console.log("  Unable to delete game entry");
+              } else {
+                console.log("  Successfully deleted game entry");
+              }
+              quit(connection, err);
+            });
+          }
+          console.log("  Game write successful");
+          prompt(connection);
+        });
+      });
+    } else {
+      console.log("  Aborting game write");
+      prompt(connection);
+    }
+  });
 };
 
 var promptForPlayerName = function(connection, gameDetails) {
   if (gameDetails.playerNames.length >= gameDetails.playerCount) {
-    var rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout
-    });
-    console.log("  Game details:");
-    console.log("    Date (YYYY-MM-DD): " + gameDetails.dateString);
-    console.log("    Domain: " + gameDetails.domainName);
-    console.log("    Durok: " + gameDetails.durokName);
-    console.log("    Other player(s): " + gameDetails.playerNames.slice(1));
-    rl.question("  Game details correct? (y/n) ", function(confirmation) {
-      rl.close();
-      if (confirmation === "y" || confirmation === "Y") {
-        var date = gameDetails.date;
-        var domainId = gameDetails.domainName ? domains[gameDetails.domainName] : 0;
-        connection.query(insertGameQuery(date, domainId, gameDetails.playerCount), function(err, info) {
-          if (err) {
-            quit(connection, err);
-          }
-          // SELECT LAST_INSERT_ID()
-          gameDetails.gameId = info.SOMETHING_FOR_THE_GAME_ID;
-          var playerGameResultIds = [];
-          // TODO: set stuff to deleted if any of the playerGameResult writes fails
-          console.log("(write stuff here)");
-          // writePlayerGameResult(connection, gameDetails, playerGameResultIds);
-        });
-      } else {
-        console.log("  Aborting game write");
-        prompt(connection);
-      }
-    });
-
+    writeGame(connection, gameDetails);
   } else {
     var currPlayerCount = gameDetails.playerNames.length;
     var playerRl = readline.createInterface({
