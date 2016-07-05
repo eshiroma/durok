@@ -36,11 +36,10 @@ var deleteGameQuery = function(gameId) {
 var insertPlayerGameResultQuery = function(gameId, durokId, otherPlayerIds) {
   var playerCount = otherPlayerIds.length + 1;
   var result = 'INSERT INTO player_game_results (game_id, player_count, player_id, is_durok) values '
-    + ',(' + gameId + ',' + playerCount + ',' + durokId + ',1)';
+    + '(' + gameId + ',' + playerCount + ',' + durokId + ',1)';
   otherPlayerIds.forEach(function(playerId) {
     result += ', (' + gameId + ',' + playerCount + ',' + playerId + ',0)';
   });
-  console.log(result);
   return result + ';';
 };
 
