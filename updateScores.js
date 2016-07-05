@@ -31,7 +31,7 @@ var insertGameQuery = function(gameDate, domainId, playerCount) {
     + domainId + ',' + playerCount + ');';
 };
 var deleteGameQuery = function(gameId) {
-  return 'UPDATE games SET deleted="1" WHERE id=' + gameId + ';';
+  return 'UPDATE games SET deleted=1 WHERE id=' + gameId + ';';
 };
 var insertPlayerGameResultQuery = function(gameId, durokId, otherPlayerIds) {
   var playerCount = otherPlayerIds.length + 1;
@@ -167,7 +167,7 @@ var printCommands = function() {
 };
 
 var printKeys = function(map) {
-  Object.keys(map).forEach(function(key) {
+  Object.keys(map).sort().forEach(function(key) {
     console.log("  " + key);
   }); 
 };
