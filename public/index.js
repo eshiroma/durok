@@ -5,6 +5,7 @@ $(document).ready(function() {
   // TODO: submit form on "enter" keypress
   // $("#scoreFiltersForm").bind("enterKey", onFormSubmit);
   $("#submitButton").click(onFilterButtonClick);
+  $(".sortableHeader").click(onSortableHeaderClick);
 });
 
 var onFilterButtonClick = function() {
@@ -18,6 +19,13 @@ var onFilterButtonClick = function() {
   render("notLossScore", domainId, startDate.getTime(), endDate.getTime());
 };
 
+var onSortableHeaderClick = function(e) {
+  var sortByStat = e.currentTarget.dataset.statName;
+  console.log(e);
+  console.log(sortByStat);
+  render(sortByStat);
+};
+
 var render = function(sortByStat, domainId, startDate, endDate) {
   var params = {
     domain: domainId,
@@ -25,17 +33,24 @@ var render = function(sortByStat, domainId, startDate, endDate) {
     end: endDate
   };
   $.get("/gameData", params, function(model) {
-    renderTable("notLossScore", model.scores);
+    renderTable(sortByStat, model.scores);
     renderTableFilters(model);
   });
 }
 
 var renderTable = function(sortByStat, scores) {
+  sortByStat = sortByStat ? sortByStat : "notLossScore";
   var tableBodyHtml = ""
   var rankedPlayerIds = Object.keys(scores).sort(function(playerId, otherId) {
     switch(sortByStat) {
       case "name":
-        return scores[otherId].name.compareTo(scores[playerId].name);
+        if (scores[playerId].name < scores[otherId].name) {
+          return -1;
+        } else if (scores[playerId].name > scores[otherId].name) {
+          return 1;
+        } else {
+          return 0;
+        }
         break;
       case "plays":
         return scores[otherId].plays - scores[playerId].plays;
@@ -46,15 +61,15 @@ var renderTable = function(sortByStat, scores) {
       case "losses":
         return scores[otherId].losses - scores[playerId].losses;
         break; 
-      case "playScore":
-        return scores[otherId].playScore - scores[playerId].playScore;
-        break;  
-      case "notLossPercent":
-        return scores[otherId].notLossPercent - scores[playerId].notLossPercent;
-        break; 
-      default: // notLossScore
+      case "notLossScore": 
         return scores[otherId].notLossScore - scores[playerId].notLossScore;
         break; 
+      case "playScore":
+        return scores[otherId].playScore - scores[playerId].playScore;
+        break;
+      case "notLossPercent":
+        return scores[otherId].notLossPercent - scores[playerId].notLossPercent;
+        break;
     }
   });
 
