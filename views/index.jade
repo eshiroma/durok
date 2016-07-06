@@ -26,13 +26,14 @@ body
     section(class="scores")
       div(class="content")
         form(id="scoreFilters", onsubmit="return false;")
-          span(class="domainSelectLabel label") Domain
-          select(id="domainSelect", name="domainId")
-            option(value="0") All
-          span(class="dateInputLabel label") Start/end date
-          input(class="startDate", type="date", name="startDate")
-          input(class="endDate", type="date", name="endDate")
-          button(id="submitButton") <i class="fa fa-filter" aria-hidden="true"></i> Filter data
+          span(class="filtersLabel")<i class="fa fa-filter" aria-hidden="true"></i> Game filters
+          div(class="filtersWrapper")
+            span(class="domainSelectLabel label") Domain
+            select(id="domainSelect", name="domainId")
+              option(value="0") All
+            span(class="dateInputLabel label") Start/end date
+            input(class="startDate", type="date", name="startDate")
+            input(class="endDate", type="date", name="endDate")
 
         table(class="scoreTable")
           thead

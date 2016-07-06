@@ -53,31 +53,22 @@ input, select, option {
   border-bottom: 1px solid #ddd;
 }
 
-form {
+#scoreFilters {
   margin: 0 0 24px 0;
 }
-form label {
+#scoreFilters label {
   margin: 4px;
+}
+.filtersLabel {
+  font-weight: bold;
+  line-height: 28px;
+  margin-right: 24px;
 }
 .dateInputLabel {
   margin-left: 16px;
 }
-
-#submitButton {
-  height: 28px;
-  padding: 4px 48px;
-  margin: 0 0 0 20px;
-  background: none;
-  box-shadow: none;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  transition: all .25s ease-in-out;
-  -webkit-transition: all .25s ease-in-out;
-  -moz-transition: all .25s ease-in-out;
-}
-#submitButton:hover {
-  background: #ddd;
-  color: #fff;
+.filtersWrapper {
+  float: right;
 }
 
 table {
@@ -93,6 +84,9 @@ tbody td {
   font-size: 12px;
   height: 32px;
   border-bottom: 1px solid #ddd;
+}
+tbody td:hover {
+
 }
 
 

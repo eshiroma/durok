@@ -1,8 +1,10 @@
 $(document).ready(function() {
-    // initial page render
+  // initial page render
   render();
 
-  $("#submitButton").click(onFilterButtonClick);
+  $("#domainSelect").change(filterData);
+  $("#scoreFilters input").change(filterData);
+
   $(".sortableHeader").click(onSortableHeaderClick);
 });
 
@@ -21,7 +23,7 @@ const statInfo = {
   "notLossPercent": { defaultIsDescending: true }
 }
 
-var onFilterButtonClick = function() {
+var filterData = function() {
   var filters = document.getElementById("scoreFilters");
   var domainId = filters.domainSelect.options[filters.domainSelect.selectedIndex].value;
 
