@@ -17,15 +17,13 @@ $(document).ready(function() {
     console.log(e.clientY, e.clientX);
     var top = e.clientY + $(document).scrollTop();
     var left = e.clientX + $(document).scrollLeft() + 16;
-    $("#notLossTooltip").fadeIn(300);
-    $("#notLossTooltip").offset({ top: top, left: left });
+    $("#notLossTooltip").fadeIn(300).offset({ top: top, left: left });
   });
   $("#playScoreTooltipTarget").mouseover(function(e) {
     console.log(e.clientY, e.clientX);
     var top = e.clientY + $(document).scrollTop();
     var left = e.clientX + $(document).scrollLeft() + 16;
-    $("#playScoreTooltip").fadeIn(300);
-    $("#playScoreTooltip").offset({ top: top, left: left });
+    $("#playScoreTooltip").fadeIn(300).offset({ top: top, left: left });
   });
 });
 
@@ -42,7 +40,19 @@ const statInfo = {
   "notLossScore": { defaultIsDescending: true },
   "playScore": { defaultIsDescending: true },
   "notLossPercent": { defaultIsDescending: true }
-}
+};
+
+var tooltipMouseove = function(tooltipId) {
+  return function(e) {
+    $("#playScoreTooltipTarget").mouseover(function(e) {
+    var top = e.clientY + $(document).scrollTop();
+    var left = e.clientX + $(document).scrollLeft() + 16;
+    $tooltip = $("#" + tooltipId);
+    $tooltip.fadeIn(300);
+    $tooltip.offset({ top: top, left: left });
+  });
+  }
+};
 
 var filterData = function() {
   var filters = document.getElementById("scoreFilters");
@@ -74,7 +84,7 @@ var render = function(domainId, startDate, endDate) {
     renderTable(model.scores);
     renderTableFilters(model);
   });
-}
+};
 
 var rankPlayerIds = function(scores, stat) {
   return Object.keys(scores).sort(function(playerId, otherId) {

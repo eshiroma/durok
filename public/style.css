@@ -97,15 +97,26 @@ input, select, option {
 .row {
   display: flex;
 }
+.tableBody .row:hover {
+  background-color: #eee;
+}
+.tableBody .row,
+.tableBody .row:hover  {
+  -webkit-transition: all 0.25s ease-in-out;
+  -moz-transition: all 0.25s ease-in-out;
+  transition: all 0.25s ease-in-out;
+}
 
-.rankCol { min-width: 48px; }
+.tableHead .rankCol { min-width: 48px; }
+.tableBody .rankCol { padding-left: 16px; min-width: 32px}
+
 .playsCol,
 .lossesCol { min-width: 64px; }
-.playerCol { min-width: 200px; }
+.playerCol { min-width: 208px; }
 .notLossScoreCol { min-width: 128px; }
-.playScoreCol { min-width: 104px; }
-.notLossesCol,
-.notLossPercentCol { min-width: 96px; }
+.playScoreCol,
+.notLossPercentCol,
+.notLossesCol { min-width: 96px; }
 
 ul {
   padding: 0;
