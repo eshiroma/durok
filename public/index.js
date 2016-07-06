@@ -106,18 +106,18 @@ var renderTable = function(scores) {
     var notLossScoreSign = scores[playerId].notLossScore >= 0 ? "positiveScore" : "negativeScore";
     var playScoreSign = scores[playerId].playScore >= 0 ? "positiveScore" : "negativeScore";
     
-    tableBodyHtml += '<tr class="playerRow">'
-    + '  <td class="rankCol">' + scores[playerId].rank + '</td>'
-    + '  <td class="playerCol">' + scores[playerId].name + '</td>'
-    + '  <td class="playsCol">' + scores[playerId].plays + '</td>'
-    + '  <td class="lossesCol">' + scores[playerId].losses + '</td>'
-    + '  <td class="notLossesCol">' + scores[playerId].notLosses + '</td>'
-    + '  <td class="notLossScoreCol ' + notLossScoreSign + '">' + scores[playerId].notLossScore.toFixed(4) + '</td>'
-    + '  <td class="playScoreCol ' + playScoreSign + '">' + scores[playerId].playScore.toFixed(4) + '</td>'
-    + '  <td class="notLossPercentCol">' + scores[playerId].notLossPercent.toFixed(3) + '</td>'
-    + '</tr>';
+    tableBodyHtml += '<div class="row">'
+    + '  <span class="rankCol cell">' + scores[playerId].rank + '</span>'
+    + '  <span class="playerCol cell">' + scores[playerId].name + '</span>'
+    + '  <span class="playsCol cell">' + scores[playerId].plays + '</span>'
+    + '  <span class="lossesCol cell">' + scores[playerId].losses + '</span>'
+    + '  <span class="notLossesCol cell">' + scores[playerId].notLosses + '</span>'
+    + '  <span class="notLossScoreCol cell ' + notLossScoreSign + '">' + scores[playerId].notLossScore.toFixed(4) + '</span>'
+    + '  <span class="playScoreCol cell ' + playScoreSign + '">' + scores[playerId].playScore.toFixed(4) + '</span>'
+    + '  <span class="notLossPercentCol cell">' + scores[playerId].notLossPercent.toFixed(3) + '</span>'
+    + '</div>'
   });
-  $("tbody").html(tableBodyHtml);
+  $(".tableBody").html(tableBodyHtml);
 };
 
 var renderTableFilters = function(model) {

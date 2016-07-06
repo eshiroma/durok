@@ -55,6 +55,7 @@ input, select, option {
 
 #scoreFilters {
   margin: 0 0 24px 0;
+  overflow: auto;
 }
 #scoreFilters label {
   margin: 4px;
@@ -71,28 +72,24 @@ input, select, option {
   float: right;
 }
 
-table {
-  border-spacing: 0;
-}
-
-thead td {
+.tableHead .cell {
   height: 36px;
   border-bottom: 2px solid #ddd;
 }
 
-tbody td {
+.tableBody .cell {
   font-size: 12px;
   height: 32px;
   border-bottom: 1px solid #ddd;
 }
-tbody td:hover {
-
-}
-
 
 td.selected { font-weight: bold; }
 td.positiveScore { color: darkgreen; }
 td.negativeScore { color: darkred; }
+
+.row {
+  display: flex;
+}
 
 .rankCol {
   min-width: 48px;

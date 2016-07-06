@@ -26,7 +26,7 @@ body
     section(class="scores")
       div(class="content")
         form(id="scoreFilters", onsubmit="return false;")
-          span(class="filtersLabel")<i class="fa fa-filter" aria-hidden="true"></i> Game filters
+          span(class="filtersLabel") Game filters <i class="fa fa-filter" aria-hidden="true"></i>
           div(class="filtersWrapper")
             span(class="domainSelectLabel label") Domain
             select(id="domainSelect", name="domainId")
@@ -35,15 +35,14 @@ body
             input(class="startDate", type="date", name="startDate")
             input(class="endDate", type="date", name="endDate")
 
-        table(class="scoreTable")
-          thead
-            tr
-              td(class="rankCol sortableHeader selected", data-stat-name="rank") Rank
-              td(class="playerCol sortableHeader", data-stat-name="name") Player
-              td(class="playsCol sortableHeader", data-stat-name="plays") Plays
-              td(class="lossesCol sortableHeader", data-stat-name="losses") Losses
-              td(class="notLossesCol sortableHeader", data-stat-name="notLosses") Not Losses
-              td(class="notLossScoreCol sortableHeader", data-stat-name="notLossScore") Not Loss Score
-              td(class="playScoreCol sortableHeader", data-stat-name="playScore") Play Score
-              td(class="notLossPercentCol sortableHeader", data-stat-name="notLossPercent") Not Loss %
-          tbody
+        div(class="table scoreTable")
+          div(class="tableHead row")
+              span(class="rankCol sortableHeader cell selected", data-stat-name="rank") Rank
+              span(class="playerCol sortableHeader cell", data-stat-name="name") Player
+              span(class="playsCol sortableHeader cell", data-stat-name="plays") Plays
+              span(class="lossesCol sortableHeader cell", data-stat-name="losses") Losses
+              span(class="notLossesCol sortableHeader cell", data-stat-name="notLosses") Not Losses
+              span(class="notLossScoreCol sortableHeader cell", data-stat-name="notLossScore") Not Loss Score
+              span(class="playScoreCol sortableHeader cell", data-stat-name="playScore") Play Score
+              span(class="notLossPercentCol sortableHeader cell", data-stat-name="notLossPercent") Not Loss %
+          div(class="tableBody")
