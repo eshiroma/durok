@@ -10,18 +10,11 @@ head
 
 body
     section(class="banner")
-      h1 Durok Scores
-
-    section(class="tableKey")
-      div(class="content")
-        h2 Scoring key
-        ul
-          li <span class="scoreStat">Not Loss Score:</span> -1 point per loss + (1/# of non-losers) per not loss
-          li <span class="scoreStat">Play Score:</span> -1 point per loss + (1/# of players) per game
-
+      h1 Durok
 
     section(class="scores")
       div(class="content")
+        h1 Scores
         form(id="scoreFilters", onsubmit="return false;")
           span(class="filtersLabel") Game filters <i class="fa fa-filter" aria-hidden="true"></i>
           div(class="filtersWrapper")
@@ -39,29 +32,32 @@ body
               div(class="playsCol sortableHeader cell", data-stat-name="plays") Plays
               div(class="lossesCol sortableHeader cell", data-stat-name="losses") Losses
               div(class="notLossesCol sortableHeader cell", data-stat-name="notLosses") Not Losses
-              div(class="notLossScoreCol sortableHeader cell", data-stat-name="notLossScore") Not Loss Score
-              div(class="playScoreCol sortableHeader cell", data-stat-name="playScore") Play Score
+              div(class="notLossScoreCol sortableHeader cell", data-stat-name="notLossScore") Not Loss Score <i id="notLossTooltipTarget" class="tooltipTarget fa fa-question-circle" aria-hidden="true"></i>
+              div(class="playScoreCol sortableHeader cell", data-stat-name="playScore") Play Score <i id="playScoreTooltipTarget" class="tooltipTarget fa fa-question-circle" aria-hidden="true"></i>
               div(class="notLossPercentCol sortableHeader cell", data-stat-name="notLossPercent") Not Loss %
           div(class="tableBody")
 
+      div(id="notLossTooltip" class="tooltip") -1 point per loss <br> + (1/# of non-losers) per not loss
+      div(id="playScoreTooltip" class="tooltip") -1 point per loss <br> + (1/# of players) per game
+
     section(class="rules")
       div(class="content")
-        h2 Rules
+        h1 Rules
 
-        h3 Summary
+        h2 Summary
         Durok is a game with only one loser, but no winners. Players (2-8) fight to get rid of their cards in a series of attacks and defends. The last one in the game with cards is declared the "Durok" (Russian for "fool").
 
-        h3 Objective
+        h2 Objective
         The goal is to not be the Durok of the game; the loser is the last player to be holding cards.
 
-        h3 Card rankings
+        h2 Card rankings
         ul
           li played with a standard deck of 54 playing cards
           li trump suit is determined upon dealing; all trump cards are higher than all non-trump cards; all non-trump suits are of equal rank
           li aces are high, 2s are low (jokers are the highest)
           li jokers are the highest (above aces); joker of the trump suit is the higher joker
 
-        h3 Gameplay
+        h2 Gameplay
         ul <span class="listTitle">Dealing</span>
           li the top deck card is flipped to determine the trump suit (and is used as the last card in the draw pile); this card may be rechosen at random if it is a joker
           li each player is dealt six cards
@@ -90,7 +86,7 @@ body
           li if a player is attacked and successfully defends, they then get to attack the next player
           li if a player does not successfully defend an attack, the next player gets to attack
 
-        h3 Miscellaneous
+        h2 Miscellaneous
         ul <span class="listTitle">Obscure rules</span>
           li if a player has the 2 of trump, they may override the Durok and play first (also choosing the direction), if they play the 2 of trump
         ul <span class="listTitle">Things to note</span>

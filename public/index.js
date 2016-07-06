@@ -2,10 +2,31 @@ $(document).ready(function() {
   // initial page render
   render();
 
+  // set up table sorting listeners
   $("#domainSelect").change(filterData);
   $("#scoreFilters input").change(filterData);
 
   $(".sortableHeader").click(onSortableHeaderClick);
+
+  // set up tooltips
+  $(".tooltip").hide();
+  $(".tooltipTarget").mouseout(function(e) {
+    $(".tooltip").hide();
+  });
+  $("#notLossTooltipTarget").mouseover(function(e) {
+    console.log(e.clientY, e.clientX);
+    var top = e.clientY + $(document).scrollTop();
+    var left = e.clientX + $(document).scrollLeft() + 16;
+    $("#notLossTooltip").show();
+    $("#notLossTooltip").offset({ top: top, left: left });
+  });
+  $("#playScoreTooltipTarget").mouseover(function(e) {
+    console.log(e.clientY, e.clientX);
+    var top = e.clientY + $(document).scrollTop();
+    var left = e.clientX + $(document).scrollLeft() + 16;
+    $("#playScoreTooltip").show();
+    $("#playScoreTooltip").offset({ top: top, left: left });
+  });
 });
 
 var prevSortByStat = undefined;
