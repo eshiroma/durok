@@ -8,6 +8,10 @@ $(document).ready(function() {
   $(".sortableHeader").click(onSortableHeaderClick);
 });
 
+var prevSortByStat = undefined;
+var sortByStat = "notLossScore";
+var isDescending = true;
+
 var onFilterButtonClick = function() {
   var filters = document.getElementById("scoreFilters");
   var domainId = filters.domainSelect.options[filters.domainSelect.selectedIndex].value;
@@ -16,60 +20,73 @@ var onFilterButtonClick = function() {
   var startDate = filters.startDate.value ? new Date(filters.startDate.value) : new Date(0);
   var endDate = filters.endDate.value ? new Date(filters.endDate.value) : new Date();
 
-  render("notLossScore", domainId, startDate.getTime(), endDate.getTime());
+  render(domainId, startDate.getTime(), endDate.getTime());
 };
 
 var onSortableHeaderClick = function(e) {
-  var sortByStat = e.currentTarget.dataset.statName;
-  console.log(e);
-  console.log(sortByStat);
-  render(sortByStat);
+  prevSortByStat = sortByStat;
+  sortByStat = e.currentTarget.dataset.statName;
+  render();
 };
 
-var render = function(sortByStat, domainId, startDate, endDate) {
+var render = function(domainId, startDate, endDate) {
   var params = {
     domain: domainId,
     start: startDate,
     end: endDate
   };
   $.get("/gameData", params, function(model) {
-    renderTable(sortByStat, model.scores);
+    renderTable(model.scores);
     renderTableFilters(model);
   });
 }
 
-var renderTable = function(sortByStat, scores) {
-  sortByStat = sortByStat ? sortByStat : "notLossScore";
-  var tableBodyHtml = ""
+var renderTable = function(scores) {
+  var tableBodyHtml = "";
+  var previsDescending = isDescending;
   var rankedPlayerIds = Object.keys(scores).sort(function(playerId, otherId) {
+    var result;
     switch(sortByStat) {
       case "name":
-        if (scores[playerId].name < scores[otherId].name) {
-          return -1;
-        } else if (scores[playerId].name > scores[otherId].name) {
-          return 1;
+        if (scores[playerId].name <= scores[otherId].name) {
+          isDescending = true;
+          result = -1;
         } else {
-          return 0;
+          isDescending = false;
+          result = 1;
         }
         break;
       case "plays":
-        return scores[otherId].plays - scores[playerId].plays;
+        isDescending = true;
+        result = scores[otherId].plays - scores[playerId].plays;
         break;
       case "notLosses":
-        return scores[otherId].notLosses - scores[playerId].notLosses;
+        isDescending = true;
+        result = scores[otherId].notLosses - scores[playerId].notLosses;
         break; 
       case "losses":
-        return scores[otherId].losses - scores[playerId].losses;
+        isDescending = false;
+        result = scores[otherId].losses - scores[playerId].losses;
         break; 
-      case "notLossScore": 
-        return scores[otherId].notLossScore - scores[playerId].notLossScore;
+      case "notLossScore":
+        isDescending = true; 
+        result = scores[otherId].notLossScore - scores[playerId].notLossScore;
         break; 
       case "playScore":
-        return scores[otherId].playScore - scores[playerId].playScore;
+        isDescending = true;
+        result = scores[otherId].playScore - scores[playerId].playScore;
         break;
       case "notLossPercent":
-        return scores[otherId].notLossPercent - scores[playerId].notLossPercent;
+        isDescending = true;
+        result = scores[otherId].notLossPercent - scores[playerId].notLossPercent;
         break;
+    }
+    // Reverse sorting if the header was already selected
+    if (prevSortByStat === sortByStat && previsDescending == isDescending) {
+      isDescending = !isDescending;
+      return -result;
+    } else {
+      return result;
     }
   });
 
