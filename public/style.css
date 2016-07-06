@@ -27,11 +27,6 @@ h1 {
   font-weight: normal;
 }
 
-h2 {
-  margin-top: 32px;
-  font-weight: normal;
-}
-
 section {
   padding: 20px;
 }
@@ -73,19 +68,23 @@ input, select, option {
 }
 
 .tableHead .cell {
-  height: 36px;
-  border-bottom: 2px solid #ddd;
+  border-bottom: 3px solid #ddd;
 }
 
 .tableBody .cell {
   font-size: 12px;
-  height: 32px;
   border-bottom: 1px solid #ddd;
 }
 
-td.selected { font-weight: bold; }
-td.positiveScore { color: darkgreen; }
-td.negativeScore { color: darkred; }
+.cell {
+  display: inline;
+  height: 32px;
+  line-height: 32px;
+  vertical-align: middle;
+}
+.cell.selected { font-weight: bold; }
+.cell.positiveScore { color: darkgreen; }
+.cell.negativeScore { color: darkred; }
 
 .row {
   display: flex;
@@ -114,8 +113,11 @@ td.negativeScore { color: darkred; }
   min-width: 128px;
 }
 
-.explanations ul {
-  padding-left: 20px;
+ul {
+  padding: 0;
+}
+li {
+  margin-left: 20px;
 } 
 
 li .scoreStat,

@@ -12,11 +12,8 @@ body
     section(class="banner")
       h1 Durok Scores
 
-    section(class="explanations")
+    section(class="tableKey")
       div(class="content")
-        h2 Overview
-        p Durok is a game with only one loser, but no winners. Players fight to get rid of their cards in a series of attacks and defends. The last one in the game with cards is declared the "Durok" (Russian for "fool").
-
         h2 Scoring key
         ul
           li <span class="scoreStat">Not Loss Score:</span> -1 point per loss + (1/# of non-losers) per not loss
@@ -37,12 +34,66 @@ body
 
         div(class="table scoreTable")
           div(class="tableHead row")
-              span(class="rankCol sortableHeader cell selected", data-stat-name="rank") Rank
-              span(class="playerCol sortableHeader cell", data-stat-name="name") Player
-              span(class="playsCol sortableHeader cell", data-stat-name="plays") Plays
-              span(class="lossesCol sortableHeader cell", data-stat-name="losses") Losses
-              span(class="notLossesCol sortableHeader cell", data-stat-name="notLosses") Not Losses
-              span(class="notLossScoreCol sortableHeader cell", data-stat-name="notLossScore") Not Loss Score
-              span(class="playScoreCol sortableHeader cell", data-stat-name="playScore") Play Score
-              span(class="notLossPercentCol sortableHeader cell", data-stat-name="notLossPercent") Not Loss %
+              div(class="rankCol sortableHeader cell selected", data-stat-name="rank") Rank
+              div(class="playerCol sortableHeader cell", data-stat-name="name") Player
+              div(class="playsCol sortableHeader cell", data-stat-name="plays") Plays
+              div(class="lossesCol sortableHeader cell", data-stat-name="losses") Losses
+              div(class="notLossesCol sortableHeader cell", data-stat-name="notLosses") Not Losses
+              div(class="notLossScoreCol sortableHeader cell", data-stat-name="notLossScore") Not Loss Score
+              div(class="playScoreCol sortableHeader cell", data-stat-name="playScore") Play Score
+              div(class="notLossPercentCol sortableHeader cell", data-stat-name="notLossPercent") Not Loss %
           div(class="tableBody")
+
+    section(class="rules")
+      div(class="content")
+        h2 Rules
+
+        h3 Summary
+        Durok is a game with only one loser, but no winners. Players (2-8) fight to get rid of their cards in a series of attacks and defends. The last one in the game with cards is declared the "Durok" (Russian for "fool").
+
+        h3 Objective
+        The goal is to not be the Durok of the game; the loser is the last player to be holding cards.
+
+        h3 Card rankings
+        ul
+          li played with a standard deck of 54 playing cards
+          li trump suit is determined upon dealing; all trump cards are higher than all non-trump cards; all non-trump suits are of equal rank
+          li aces are high, 2s are low (jokers are the highest)
+          li jokers are the highest (above aces); joker of the trump suit is the higher joker
+
+        h3 Gameplay
+        ul <span class="listTitle">Dealing</span>
+          li the top deck card is flipped to determine the trump suit (and is used as the last card in the draw pile); this card may be rechosen at random if it is a joker
+          li each player is dealt six cards
+        ul <span class="listTitle">Attacking</span>
+          li the first move is always an attack; if the Durok of the last game is present, they attack first
+          li if there is no Durok, the player with the lowest trump card goes first; the card must be shown, but need not be played)
+          li a player may "attack" the next player with as many cards from their hand of the same number
+          li the first attacker chooses the game direction (by playing either to the left or the right); direction is set for the rest of the game
+        ul <span class="listTitle">Being attacked</span>
+          li if the player has one or more cards of the same number of the attacking cards, they may (but is not obligated to) "bounce" the attack by placing at least one of these cards down, and then attacking the next player with all the cards
+          li the player may "forfeit" and simply pick up all attacking cards
+          li the player may attempt to "defend" the attack
+        ul <span class="listTitle">Defending</span>
+          li the player must "cover" all cards in the attack, as well as any other card their defense may also accrue
+          li to "cover" an attacking card, the defending player must place on top of it a card which is 1) a higher number of the same suit, or 2) any trump card (if an attacking card is trump, it must be covered with a higher-ranked card)
+          li once a player attempts to cover, any player at the table (including the attacker) may add to the attack by playing a card out of their hand with a number that is already on the table (either matches the value of the original attack, or any number used to cover, including trump)
+          li if the player covers all attacking cards (including any and all added cards), all cards on the table are "burned"; they are removed from the game, and kept face-down
+          li the player cannot cover everything, they must pick up all cards from the attack
+          li a player cannot be attacked with more than six cards (or the number of cards in their hand, if fewer than six)
+        ul <span class="listTitle">Ending an attack round</span>
+          li an attack round ends when a player either picks up all the attacking cards (with or without attempting to defend), or successfull defends an attack
+          li at the end of an attack round, all players draw back up to six cards, starting with the player who began the attack and progressing in "play order"
+          li if the draw pile runs out of cards, players simply do not draw (the face-up cards is the last card in the deck)
+          li players have a right to count how many cards remain in the draw deck
+        ul <span class="listTitle">Starting the next attack</span>
+          li if a player is attacked and successfully defends, they then get to attack the next player
+          li if a player does not successfully defend an attack, the next player gets to attack
+
+        h3 Miscellaneous
+        ul <span class="listTitle">Obscure rules</span>
+          li if a player has the 2 of trump, they may override the Durok and play first (also choosing the direction), if they play the 2 of trump
+        ul <span class="listTitle">Things to note</span>
+          li "A card laid is a card played"; once you lay a card on the table (faceup, and let go), it cannot be undone
+          li it's desirable to maintain the "sanctity of the deck"; always draw in proper order!
+
