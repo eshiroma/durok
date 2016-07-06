@@ -24,8 +24,13 @@ h1 {
   font-weight: normal;
 }
 
+h2 {
+  margin-top: 32px;
+  font-weight: normal;
+}
+
 section {
-  padding: 40px;
+  padding: 20px;
 }
 
 .content {
@@ -109,4 +114,13 @@ td.negativeScore { color: darkred; }
 
 .notLossScoreCol {
   min-width: 128px;
+}
+
+.explanations ul {
+  padding-left: 20px;
+} 
+
+li .scoreStat,
+li .filterCategory {
+  font-weight: bold;
 }

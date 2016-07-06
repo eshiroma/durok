@@ -12,6 +12,17 @@ body
     section(class="banner")
       h1 Durok Scores
 
+    section(class="explanations")
+      div(class="content")
+        h2 Overview
+        p Durok is a game with only one loser, but no winners. Players fight to get rid of their cards in a series of attacks and defends. The last one in the game with cards is declared the "Durok" (Russian for "fool").
+
+        h2 Scoring key
+        ul
+          li <span class="scoreStat">Not Loss Score:</span> -1 point per loss + (1/# of non-losers) per not loss
+          li <span class="scoreStat">Play Score:</span> -1 point per loss + (1/# of players) per game
+
+
     section(class="scores")
       div(class="content")
         form(id="scoreFilters", onsubmit="return false;")
