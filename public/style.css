@@ -2,23 +2,28 @@ body, table, input, select, option, button {
   color: #555;
   font-family: "Open Sans", sans-serif;
   font-size: 14px;
-  margin: 0px;
+  margin: 0;
 }
 
 .banner {
   color: #fff;
   background: #aaa;
   height: 300px;
-  margin: 0px;
+  margin: 0;
   text-align: center;
-  line-height: 200px;
+}
+
+.banner h1 {
+  margin-top: 120px;
+  text-transform: uppercase;
 }
 
 h1 {
   font-size: 56px;
-  font-family: "Crimson Text", sans-serif;
-  text-transform: uppercase;
+  font-family: "Lora", sans-serif;
+  font-weight: normal;
 }
+
 section {
   padding: 40px;
 }
@@ -28,12 +33,11 @@ section {
   margin: auto;
 }
 
-
 input, select, option {
   font-size: 12px;
   height: 28px;
-  padding: 0px 4px;
-  margin: 0px 4px;
+  padding: 0 4px;
+  margin: 0 4px;
   box-sizing: border-box;
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
@@ -41,6 +45,9 @@ input, select, option {
   border-bottom: 1px solid #ddd;
 }
 
+form {
+  margin: 0 0 24px 0;
+}
 form label {
   margin: 4px;
 }
@@ -50,8 +57,8 @@ form label {
 
 #submitButton {
   height: 28px;
-  padding: 4px 32px;
-  margin: 0px 0px 0px 20px;
+  padding: 4px 24px;
+  margin: 0 0 0 20px;
   background: none;
   box-shadow: none;
   border: 1px solid #ddd;
@@ -66,7 +73,7 @@ form label {
 }
 
 table {
-  border-spacing: 0px;
+  border-spacing: 0;
 }
 
 thead td {

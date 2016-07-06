@@ -12,6 +12,16 @@ var prevSortByStat = undefined;
 var sortByStat = "notLossScore";
 var isDescending = true;
 
+const statInfo = {
+  "name": { defaultIsDescending: false },
+  "plays": { defaultIsDescending: true },
+  "notLosses": { defaultIsDescending: true },
+  "losses": { defaultIsDescending: false },
+  "notLossScore": { defaultIsDescending: true },
+  "playScore": { defaultIsDescending: true },
+  "notLossPercent": { defaultIsDescending: true }
+}
+
 var onFilterButtonClick = function() {
   var filters = document.getElementById("scoreFilters");
   var domainId = filters.domainSelect.options[filters.domainSelect.selectedIndex].value;
@@ -44,55 +54,49 @@ var render = function(domainId, startDate, endDate) {
   });
 }
 
-var renderTable = function(scores) {
-  var tableBodyHtml = "";
-  var prevIsDescending = isDescending;
-  var rankedPlayerIds = Object.keys(scores).sort(function(playerId, otherId) {
-    var result;
-    switch(sortByStat) {
+var rankPlayerIds = function(scores, stat) {
+  return Object.keys(scores).sort(function(playerId, otherId) {
+    switch(stat) {
       case "name":
         if (scores[playerId].name <= scores[otherId].name) {
-          isDescending = true;
-          result = -1;
+          return -1;
         } else {
-          isDescending = false;
-          result = 1;
+          return 1;
         }
         break;
       case "plays":
-        isDescending = true;
-        result = scores[otherId].plays - scores[playerId].plays;
+        return scores[otherId].plays - scores[playerId].plays;
         break;
       case "notLosses":
-        isDescending = true;
-        result = scores[otherId].notLosses - scores[playerId].notLosses;
+        return scores[otherId].notLosses - scores[playerId].notLosses;
         break; 
       case "losses":
-        isDescending = false;
-        result = scores[otherId].losses - scores[playerId].losses;
+        return scores[otherId].losses - scores[playerId].losses;
         break; 
       case "notLossScore":
-        isDescending = true; 
-        result = scores[otherId].notLossScore - scores[playerId].notLossScore;
+        return scores[otherId].notLossScore - scores[playerId].notLossScore;
         break; 
       case "playScore":
-        isDescending = true;
-        result = scores[otherId].playScore - scores[playerId].playScore;
+        return scores[otherId].playScore - scores[playerId].playScore;
         break;
       case "notLossPercent":
-        isDescending = true;
-        result = scores[otherId].notLossPercent - scores[playerId].notLossPercent;
+        return scores[otherId].notLossPercent - scores[playerId].notLossPercent;
         break;
     }
-    // Reverse sorting if the header was already selected
-    if (prevSortByStat === sortByStat && prevIsDescending == isDescending) {
-      isDescending = !isDescending;
-      return -result;
-    } else {
-      return result;
-    }
   });
+};
 
+var renderTable = function(scores) {
+  var tableBodyHtml = "";
+
+  var rankedPlayerIds = rankPlayerIds(scores);
+  // Reverse sorting if the header was already selected
+  if (prevSortByStat === sortByStat && statInfo[sortByStat].defaultIsDescending === isDescending) {
+    isDescending = !isDescending;
+    rankedPlayerIds.reverse();
+  } else {
+    isDescending = statInfo[sortByStat].defaultIsDescending;
+  }
 
   rankedPlayerIds.forEach(function(playerId) {
     var notLossScoreSign = scores[playerId].notLossScore >= 0 ? "positiveScore" : "negativeScore";
