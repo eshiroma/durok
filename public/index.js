@@ -1,7 +1,4 @@
 $(document).ready(function() {
-  // initial page render
-  render();
-
   // set up table sorting listeners
   $("#domainSelect").change(filterData);
   $("#scoreFilters input").change(filterData);
@@ -25,6 +22,13 @@ $(document).ready(function() {
     var left = e.clientX + $(document).scrollLeft() + 16;
     $("#playScoreTooltip").fadeIn(300).offset({ top: top, left: left });
   });
+
+  // set up (some) table transitions
+  $(".scoreTable").hide();
+  $(".scoreTable").fadeIn(600, easeOutQuad);
+
+  // initial page render
+  render();
 });
 
 var prevSortByStat = undefined;
@@ -40,18 +44,6 @@ const statInfo = {
   "notLossScore": { defaultIsDescending: true },
   "playScore": { defaultIsDescending: true },
   "notLossPercent": { defaultIsDescending: true }
-};
-
-var tooltipMouseove = function(tooltipId) {
-  return function(e) {
-    $("#playScoreTooltipTarget").mouseover(function(e) {
-    var top = e.clientY + $(document).scrollTop();
-    var left = e.clientX + $(document).scrollLeft() + 16;
-    $tooltip = $("#" + tooltipId);
-    $tooltip.fadeIn(300);
-    $tooltip.offset({ top: top, left: left });
-  });
-  }
 };
 
 var filterData = function() {
@@ -122,36 +114,35 @@ var rankPlayerIds = function(scores, stat) {
 };
 
 var renderTable = function(scores) {
-  $(".tableBody").slideUp(function() {
-    var tableBodyHtml = "";
+  var tableBodyHtml = "";
+  $(".tableBody").hide();
 
-    var rankedPlayerIds = rankPlayerIds(scores, sortByStat);
-    // Reverse sorting if the header was already selected
-    if (prevSortByStat === sortByStat) {
-      isDescending = !isDescending;
-      rankedPlayerIds.reverse();
-    } else {
-      isDescending = statInfo[sortByStat].defaultIsDescending;
-    }
+  var rankedPlayerIds = rankPlayerIds(scores, sortByStat);
+  // Reverse sorting if the header was already selected
+  if (prevSortByStat === sortByStat) {
+    isDescending = !isDescending;
+    rankedPlayerIds.reverse();
+  } else {
+    isDescending = statInfo[sortByStat].defaultIsDescending;
+  }
 
-    rankedPlayerIds.forEach(function(playerId) {
-      var notLossScoreSign = scores[playerId].notLossScore >= 0 ? "positiveScore" : "negativeScore";
-      var playScoreSign = scores[playerId].playScore >= 0 ? "positiveScore" : "negativeScore";
-      
-      tableBodyHtml += '<div class="row">'
-      + '  <div class="rankCol cell">' + scores[playerId].rank + '</div>'
-      + '  <div class="playerCol cell">' + scores[playerId].name + '</div>'
-      + '  <div class="playsCol cell">' + scores[playerId].plays + '</div>'
-      + '  <div class="lossesCol cell">' + scores[playerId].losses + '</div>'
-      + '  <div class="notLossesCol cell">' + scores[playerId].notLosses + '</div>'
-      + '  <div class="notLossScoreCol cell ' + notLossScoreSign + '">' + scores[playerId].notLossScore.toFixed(4) + '</div>'
-      + '  <div class="playScoreCol cell ' + playScoreSign + '">' + scores[playerId].playScore.toFixed(4) + '</div>'
-      + '  <div class="notLossPercentCol cell">' + scores[playerId].notLossPercent.toFixed(3) + '</div>'
-      + '</div>'
-    });
-    $(".tableBody").html(tableBodyHtml);
-    $(".tableBody").slideDown();
+  rankedPlayerIds.forEach(function(playerId) {
+    var notLossScoreSign = scores[playerId].notLossScore >= 0 ? "positiveScore" : "negativeScore";
+    var playScoreSign = scores[playerId].playScore >= 0 ? "positiveScore" : "negativeScore";
+    
+    tableBodyHtml += '<div class="row">'
+    + '  <div class="rankCol cell">' + scores[playerId].rank + '</div>'
+    + '  <div class="playerCol cell">' + scores[playerId].name + '</div>'
+    + '  <div class="playsCol cell">' + scores[playerId].plays + '</div>'
+    + '  <div class="lossesCol cell">' + scores[playerId].losses + '</div>'
+    + '  <div class="notLossesCol cell">' + scores[playerId].notLosses + '</div>'
+    + '  <div class="notLossScoreCol cell ' + notLossScoreSign + '">' + scores[playerId].notLossScore.toFixed(4) + '</div>'
+    + '  <div class="playScoreCol cell ' + playScoreSign + '">' + scores[playerId].playScore.toFixed(4) + '</div>'
+    + '  <div class="notLossPercentCol cell">' + scores[playerId].notLossPercent.toFixed(3) + '</div>'
+    + '</div>'
   });
+  $(".tableBody").html(tableBodyHtml);
+  $(".tableBody").slideDown();
 };
 
 var renderTableFilters = function(model) {
@@ -161,4 +152,8 @@ var renderTableFilters = function(model) {
     domainSelect.options[optionCount] = new Option(model.domains[domainId], domainId, false, domainId == model.domainId);
     optionCount++;
   }
+};
+
+var easeOutQuad = function(x, t, b, c, d) {
+  return -c *(t/=d)*(t-2) + b;
 };

@@ -76,7 +76,7 @@ input, select, option {
 }
 
 .tableHead .cell {
-  border-bottom: 3px solid #ddd;
+  border-bottom: 2px solid #ddd;
 }
 
 .tableBody .cell {
@@ -90,7 +90,11 @@ input, select, option {
   line-height: 32px;
   vertical-align: middle;
 }
-.cell.selected { font-weight: bold; }
+
+.tableHead .cell.selected {
+  font-weight: bold;
+}
+
 .cell.positiveScore { color: darkgreen; }
 .cell.negativeScore { color: darkred; }
 
