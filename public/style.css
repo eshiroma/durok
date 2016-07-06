@@ -4,6 +4,9 @@ body, table, input, select, option, button {
   font-size: 14px;
   margin: 0;
 }
+body {
+  padding-bottom: 100px;
+}
 
 .banner {
   color: #fff;

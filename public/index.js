@@ -110,9 +110,9 @@ var renderTable = function(scores) {
     + '  <td class="playsCol">' + scores[playerId].plays + '</td>'
     + '  <td class="lossesCol">' + scores[playerId].losses + '</td>'
     + '  <td class="notLossesCol">' + scores[playerId].notLosses + '</td>'
-    + '  <td class="notLossScoreCol ' + notLossScoreSign + '">' + scores[playerId].notLossScore.toPrecision(3) + '</td>'
-    + '  <td class="playScoreCol ' + playScoreSign + '">' + scores[playerId].playScore.toPrecision(3) + '</td>'
-    + '  <td class="notLossPercentCol">' + scores[playerId].notLossPercent.toPrecision(4) + '</td>'
+    + '  <td class="notLossScoreCol ' + notLossScoreSign + '">' + scores[playerId].notLossScore.toFixed(4) + '</td>'
+    + '  <td class="playScoreCol ' + playScoreSign + '">' + scores[playerId].playScore.toFixed(4) + '</td>'
+    + '  <td class="notLossPercentCol">' + scores[playerId].notLossPercent.toFixed(3) + '</td>'
     + '</tr>';
   });
   $("tbody").html(tableBodyHtml);

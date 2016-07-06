@@ -368,15 +368,13 @@ var promptForPlayerName = function(connection, gameDetails) {
       playerRl.close();
       playerName = playerName.trim();
       if (Object.keys(players).indexOf(playerName) < 0) {
-        console.error("  Unable to add game; invalid player name");
-        prompt(connection);
+        console.error("  Unable to add player; invalid name");
       } else if (gameDetails.playerNames.indexOf(playerName) >= 0) {
-        console.error("  Unable to add game; duplicate player name provided");
-        prompt(connection);
+        console.error("  Unable to add player; duplicate player name provided");
       } else {
         gameDetails.playerNames.push(playerName);
-        promptForPlayerName(connection, gameDetails);
       }
+      promptForPlayerName(connection, gameDetails);
     });
   }
 };
