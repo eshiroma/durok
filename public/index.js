@@ -24,6 +24,9 @@ var onFilterButtonClick = function() {
 };
 
 var onSortableHeaderClick = function(e) {
+  $(".sortableHeader").removeClass("selected");
+  $(e.currentTarget).addClass("selected");
+
   prevSortByStat = sortByStat;
   sortByStat = e.currentTarget.dataset.statName;
   render();
@@ -43,7 +46,7 @@ var render = function(domainId, startDate, endDate) {
 
 var renderTable = function(scores) {
   var tableBodyHtml = "";
-  var previsDescending = isDescending;
+  var prevIsDescending = isDescending;
   var rankedPlayerIds = Object.keys(scores).sort(function(playerId, otherId) {
     var result;
     switch(sortByStat) {
@@ -82,7 +85,7 @@ var renderTable = function(scores) {
         break;
     }
     // Reverse sorting if the header was already selected
-    if (prevSortByStat === sortByStat && previsDescending == isDescending) {
+    if (prevSortByStat === sortByStat && prevIsDescending == isDescending) {
       isDescending = !isDescending;
       return -result;
     } else {
@@ -90,15 +93,19 @@ var renderTable = function(scores) {
     }
   });
 
+
   rankedPlayerIds.forEach(function(playerId) {
+    var notLossScoreSign = scores[playerId].notLossScore >= 0 ? "positiveScore" : "negativeScore";
+    var playScoreSign = scores[playerId].playScore >= 0 ? "positiveScore" : "negativeScore";
+    
     tableBodyHtml += '<tr class="playerRow">'
     + '  <td class="playerCol">' + scores[playerId].name + '</td>'
     + '  <td class="playsCol">' + scores[playerId].plays + '</td>'
-    + '  <td class="notLossesCol">' + scores[playerId].notLosses + '</td>'
     + '  <td class="lossesCol">' + scores[playerId].losses + '</td>'
-    + '  <td class="notLossScoreCol">' + scores[playerId].notLossScore + '</td>'
-    + '  <td class="playScoreCol">' + scores[playerId].playScore + '</td>'
-    + '  <td class="notLossPercentCol">' + scores[playerId].notLossPercent + '</td>'
+    + '  <td class="notLossesCol">' + scores[playerId].notLosses + '</td>'
+    + '  <td class="notLossScoreCol ' + notLossScoreSign + '">' + scores[playerId].notLossScore.toPrecision(3) + '</td>'
+    + '  <td class="playScoreCol ' + playScoreSign + '">' + scores[playerId].playScore.toPrecision(3) + '</td>'
+    + '  <td class="notLossPercentCol">' + scores[playerId].notLossPercent.toPrecision(4) + '</td>'
     + '</tr>';
   });
   $("tbody").html(tableBodyHtml);
@@ -111,8 +118,4 @@ var renderTableFilters = function(model) {
     domainSelect.options[optionCount] = new Option(model.domains[domainId], domainId, false, domainId == model.domainId);
     optionCount++;
   }
-};
-
-var refreshCache = function() {
-
 };

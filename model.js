@@ -106,21 +106,6 @@ function Model() {
                   delete players[playerId];
                 }
               }
-            
-              // Now print for debug purposes
-              console.log('\nPLAYERS:');
-              for (var playerId in players) {
-                console.log(players[playerId].name + ': ' + players[playerId].games + ' (' + players[playerId].lostGames + ')');
-              }
-              console.log('\nGAMES:');
-              for (var gameId in games) {
-                console.log(games[gameId].date.getTime() + ': ' + games[gameId].players + ' ' + players[games[gameId].durokId].name, games[gameId].durokId);
-              }
-              console.log('\nDOMAINS:');
-              for (var domainId in domains) {
-                console.log(domainId + ': ' + domains[domainId].name);
-              }
-              console.log('-------------------------');
               connection.end();
 
               onDoneFunction();

@@ -1,0 +1,105 @@
+body, table, input, select, option, button {
+  color: #555;
+  font-family: "Open Sans", sans-serif;
+  font-size: 14px;
+  margin: 0px;
+}
+
+.banner {
+  color: #fff;
+  background: #aaa;
+  height: 300px;
+  margin: 0px;
+  text-align: center;
+  line-height: 200px;
+}
+
+h1 {
+  font-size: 56px;
+  font-family: "Crimson Text", sans-serif;
+  text-transform: uppercase;
+}
+section {
+  padding: 40px;
+}
+
+.content {
+  max-width: 744px;
+  margin: auto;
+}
+
+
+input, select, option {
+  font-size: 12px;
+  height: 28px;
+  padding: 0px 4px;
+  margin: 0px 4px;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  border: none;
+  border-bottom: 1px solid #ddd;
+}
+
+form label {
+  margin: 4px;
+}
+.dateInputLabel {
+  margin-left: 16px;
+}
+
+#submitButton {
+  height: 28px;
+  padding: 4px 32px;
+  margin: 0px 0px 0px 20px;
+  background: none;
+  box-shadow: none;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  transition: all .25s ease-in-out;
+  -webkit-transition: all .25s ease-in-out;
+  -moz-transition: all .25s ease-in-out;
+}
+#submitButton:hover {
+  background: #ddd;
+  color: #fff;
+}
+
+table {
+  border-spacing: 0px;
+}
+
+thead td {
+  height: 36px;
+  border-bottom: 2px solid #ddd;
+}
+
+tbody td {
+  font-size: 12px;
+  height: 32px;
+  border-bottom: 1px solid #ddd;
+}
+
+
+td.selected { font-weight: bold; }
+td.positiveScore { color: darkgreen; }
+td.negativeScore { color: darkred; }
+
+.playsCol,
+.lossesCol {
+  min-width: 72px;
+}
+
+.notLossesCol,
+.playScoreCol,
+.notLossPercentCol {
+  min-width: 96px;
+}
+
+.playerCol {
+  min-width: 168px;
+}
+
+.notLossScoreCol {
+  min-width: 128px;
+}

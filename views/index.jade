@@ -2,28 +2,35 @@ doctype html(lang="en")
 head
   title="Durok Scores"
   link(href="style.css", rel="stylesheet")
+  link(href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css", rel="stylesheet")
+  link(href="https://fonts.googleapis.com/css?family=Open+Sans:400,700" rel="stylesheet")
+  link(href="https://fonts.googleapis.com/css?family=Crimson+Text:400" rel="stylesheet")
   script(src="https://code.jquery.com/jquery-latest.min.js")
   script(src="index.js")
 
 body
-    h1 Durok Scores
+    section(class="banner")
+      h1 Durok Scores
 
-    div(class="scores")
-      form(id="scoreFilters", onsubmit="return false;")
-        select(id="domainSelect", name="domainId")
-          option(value="0") All
-        input(class="startDate", type="date", name="startDate")
-        input(class="endDate", type="date", name="endDate")
-        button(id="submitButton") Filter data
+    section(class="scores")
+      div(class="content")
+        form(id="scoreFilters", onsubmit="return false;")
+          span(class="domainSelectLabel label") Domain
+          select(id="domainSelect", name="domainId")
+            option(value="0") All
+          span(class="dateInputLabel label") Start/end date
+          input(class="startDate", type="date", name="startDate")
+          input(class="endDate", type="date", name="endDate")
+          button(id="submitButton") <i class="fa fa-filter" aria-hidden="true"></i> Filter data
 
-      table(class="scoreTable")
-        thead
-          tr
-            td(class="playerCol, sortableHeader", data-stat-name="name") Player
-            td(class="playsCol, sortableHeader", data-stat-name="plays") Plays
-            td(class="notLossesCol, sortableHeader", data-stat-name="notLosses") Not Losses
-            td(class="lossesCol, sortableHeader", data-stat-name="losses") Losses
-            td(class="notLossScoreCol, sortableHeader", data-stat-name="notLossScore") Not Loss Score
-            td(class="playScoreCol, sortableHeader", data-stat-name="playScore") Play Score
-            td(class="notLossPercentCol, sortableHeader", data-stat-name="notLossPercent") Not Loss %
-        tbody
+        table(class="scoreTable")
+          thead
+            tr
+              td(class="playerCol sortableHeader", data-stat-name="name") Player
+              td(class="playsCol sortableHeader", data-stat-name="plays") Plays
+              td(class="lossesCol sortableHeader", data-stat-name="losses") Losses
+              td(class="notLossesCol sortableHeader", data-stat-name="notLosses") Not Losses
+              td(class="notLossScoreCol sortableHeader selected", data-stat-name="notLossScore") Not Loss Score
+              td(class="playScoreCol sortableHeader", data-stat-name="playScore") Play Score
+              td(class="notLossPercentCol sortableHeader", data-stat-name="notLossPercent") Not Loss %
+          tbody
