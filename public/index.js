@@ -28,7 +28,8 @@ const STAT_INFO = {
   "losses": { defaultIsDescending: false },
   "notLossScore": { defaultIsDescending: true },
   "playScore": { defaultIsDescending: true },
-  "notLossPercent": { defaultIsDescending: true }
+  "notLossPercent": { defaultIsDescending: true },
+  "streak": { defaultIsDescending: true }
 };
 
 const TOOLTIP_TRANSITION_MS = 250;
@@ -110,6 +111,7 @@ var renderTable = function(scores) {
     + '  <div class="notLossScoreCol cell ' + notLossScoreSign + '">' + scores[playerId].notLossScore.toFixed(4) + '</div>'
     + '  <div class="playScoreCol cell ' + playScoreSign + '">' + scores[playerId].playScore.toFixed(4) + '</div>'
     + '  <div class="notLossPercentCol cell">' + scores[playerId].notLossPercent.toFixed(3) + '</div>'
+    + '  <div class="streakCol cell">' + scores[playerId].streak + '</div>'
     + '</div>'
   });
   $(".tableBody").html(tableBodyHtml);
@@ -155,6 +157,9 @@ var rankPlayerIds = function(scores, stat) {
         break;
       case "notLossPercent":
         return scores[otherId].notLossPercent - scores[playerId].notLossPercent;
+        break;
+      case "streak":
+        return scores[otherId].streak - scores[playerId].streak;
         break;
     }
   });

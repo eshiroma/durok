@@ -40,6 +40,7 @@ app.get("/gameData", function(req, res) {
       notLosses: 0,
       notLossScore: 0,
       playScore: 0,
+      streak: 0
     };
   }
 
@@ -63,6 +64,7 @@ app.get("/gameData", function(req, res) {
     scores[playerId].notLossPercent = 100 * scores[playerId].notLosses / scores[playerId].plays;
   }
 
+  // compute ranks
   var rankedPlayerIds = Object.keys(players).sort(function(playerId, otherId) {
     if (scores[otherId].notLossScore != scores[playerId].notLossScore) {
       return scores[otherId].notLossScore - scores[playerId].notLossScore;
@@ -76,6 +78,25 @@ app.get("/gameData", function(req, res) {
     scores[playerId].rank = i + 1;
   });
 
+  // compute not loss streaks
+  var gameIdsByDate = Object.keys(games).sort(function(gameId, otherId) {
+    return games[gameId].date.getTime() - games[otherId].date.getTime();
+  });
+  var currStreaks = {};
+  Object.keys(players).forEach(function(playerId) {
+    currStreaks[playerId] = 0;
+  });
+
+  gameIdsByDate.forEach(function(gameId) {
+    games[gameId].players.forEach(function(playerId) {
+      if (games[gameId].durokId === playerId) {
+        currStreaks[playerId] = 0;
+      } else {
+        currStreaks[playerId]++;
+        scores[playerId].streak = Math.max(currStreaks[playerId], scores[playerId].streak);
+      }
+    });
+  });
 
   res.json({
     domainId: domainId,

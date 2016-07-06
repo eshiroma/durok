@@ -117,12 +117,13 @@ input, select, option {
 .tableBody .rankCol { padding-left: 16px; min-width: 32px}
 
 .playsCol,
-.lossesCol { min-width: 64px; }
-.playerCol { min-width: 208px; }
+.lossesCol { min-width: 56px; }
+.playerCol { min-width: 192px; }
 .notLossScoreCol { min-width: 128px; }
-.playScoreCol,
-.notLossPercentCol,
-.notLossesCol { min-width: 96px; }
+.playScoreCol { min-width: 104px; }
+.notLossPercentCol { min-width: 88px; }
+.notLossesCol { min-width: 80px; }
+.streakCol { min-width: 48px; }
 
 ul {
   padding: 0;
