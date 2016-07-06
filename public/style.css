@@ -10,14 +10,16 @@ body {
 
 .banner {
   color: #fff;
-  background: #aaa;
+  background-color: #888;
+  background-attachment: fixed;
+  background-image: url("cards.jpg");
   height: 300px;
   margin: 0;
   text-align: center;
 }
 
 .banner h1 {
-  font-size: 56px;
+  font-size: 72px;
   font-family: "Lora", sans-serif;
   text-transform: uppercase;
   margin-top: 120px;

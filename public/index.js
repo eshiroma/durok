@@ -6,22 +6,7 @@ $(document).ready(function() {
   $(".sortableHeader").click(onSortableHeaderClick);
 
   // set up tooltips
-  $(".tooltip").hide();
-  $(".tooltipTarget").mouseout(function(e) {
-    $(".tooltip").fadeOut(300);
-  });
-  $("#notLossTooltipTarget").mouseover(function(e) {
-    console.log(e.clientY, e.clientX);
-    var top = e.clientY + $(document).scrollTop();
-    var left = e.clientX + $(document).scrollLeft() + 16;
-    $("#notLossTooltip").fadeIn(300).offset({ top: top, left: left });
-  });
-  $("#playScoreTooltipTarget").mouseover(function(e) {
-    console.log(e.clientY, e.clientX);
-    var top = e.clientY + $(document).scrollTop();
-    var left = e.clientX + $(document).scrollLeft() + 16;
-    $("#playScoreTooltip").fadeIn(300).offset({ top: top, left: left });
-  });
+  initializeTooltips();
 
   // set up (some) table transitions
   $(".scoreTable").hide();
@@ -35,7 +20,7 @@ var prevSortByStat = undefined;
 var sortByStat = "rank";
 var isDescending = true;
 
-const statInfo = {
+const STAT_INFO = {
   "rank": { defaultIsDescending: false },
   "name": { defaultIsDescending: false },
   "plays": { defaultIsDescending: true },
@@ -44,6 +29,27 @@ const statInfo = {
   "notLossScore": { defaultIsDescending: true },
   "playScore": { defaultIsDescending: true },
   "notLossPercent": { defaultIsDescending: true }
+};
+
+const TOOLTIP_TRANSITION_MS = 250;
+
+var initializeTooltips = function() {
+  $(".tooltip").hide();
+
+  $("#notLossTooltipTarget").mouseover(tooltipMouseoverFunction($("#notLossTooltip")));
+  $("#playScoreTooltipTarget").mouseover(tooltipMouseoverFunction($("#playScoreTooltip")));
+  
+  $(".tooltipTarget").mouseout(function(e) {
+    $(".tooltip").fadeOut(TOOLTIP_TRANSITION_MS);
+  });
+};
+
+var tooltipMouseoverFunction = function($tooltip) {
+  return function(e) {
+    var top = e.clientY + $(document).scrollTop();
+    var left = e.clientX + $(document).scrollLeft() + 16;
+    $tooltip.fadeIn(TOOLTIP_TRANSITION_MS).offset({ top: top, left: left });
+  };
 };
 
 var filterData = function() {
@@ -76,6 +82,47 @@ var render = function(domainId, startDate, endDate) {
     renderTable(model.scores);
     renderTableFilters(model);
   });
+};
+
+var renderTable = function(scores) {
+  var tableBodyHtml = "";
+  $(".tableBody").hide();
+
+  var rankedPlayerIds = rankPlayerIds(scores, sortByStat);
+  // Reverse sorting if the header was already selected
+  if (prevSortByStat === sortByStat) {
+    isDescending = !isDescending;
+    rankedPlayerIds.reverse();
+  } else {
+    isDescending = STAT_INFO[sortByStat].defaultIsDescending;
+  }
+
+  rankedPlayerIds.forEach(function(playerId) {
+    var notLossScoreSign = scores[playerId].notLossScore >= 0 ? "positiveScore" : "negativeScore";
+    var playScoreSign = scores[playerId].playScore >= 0 ? "positiveScore" : "negativeScore";
+    
+    tableBodyHtml += '<div class="row">'
+    + '  <div class="rankCol cell">' + scores[playerId].rank + '</div>'
+    + '  <div class="playerCol cell">' + scores[playerId].name + '</div>'
+    + '  <div class="playsCol cell">' + scores[playerId].plays + '</div>'
+    + '  <div class="lossesCol cell">' + scores[playerId].losses + '</div>'
+    + '  <div class="notLossesCol cell">' + scores[playerId].notLosses + '</div>'
+    + '  <div class="notLossScoreCol cell ' + notLossScoreSign + '">' + scores[playerId].notLossScore.toFixed(4) + '</div>'
+    + '  <div class="playScoreCol cell ' + playScoreSign + '">' + scores[playerId].playScore.toFixed(4) + '</div>'
+    + '  <div class="notLossPercentCol cell">' + scores[playerId].notLossPercent.toFixed(3) + '</div>'
+    + '</div>'
+  });
+  $(".tableBody").html(tableBodyHtml);
+  $(".tableBody").slideDown();
+};
+
+var renderTableFilters = function(model) {
+  var optionCount = 1;
+  var domainSelect = document.getElementById("domainSelect");
+  for (domainId in model.domains) {
+    domainSelect.options[optionCount] = new Option(model.domains[domainId], domainId, false, domainId == model.domainId);
+    optionCount++;
+  }
 };
 
 var rankPlayerIds = function(scores, stat) {
@@ -111,47 +158,6 @@ var rankPlayerIds = function(scores, stat) {
         break;
     }
   });
-};
-
-var renderTable = function(scores) {
-  var tableBodyHtml = "";
-  $(".tableBody").hide();
-
-  var rankedPlayerIds = rankPlayerIds(scores, sortByStat);
-  // Reverse sorting if the header was already selected
-  if (prevSortByStat === sortByStat) {
-    isDescending = !isDescending;
-    rankedPlayerIds.reverse();
-  } else {
-    isDescending = statInfo[sortByStat].defaultIsDescending;
-  }
-
-  rankedPlayerIds.forEach(function(playerId) {
-    var notLossScoreSign = scores[playerId].notLossScore >= 0 ? "positiveScore" : "negativeScore";
-    var playScoreSign = scores[playerId].playScore >= 0 ? "positiveScore" : "negativeScore";
-    
-    tableBodyHtml += '<div class="row">'
-    + '  <div class="rankCol cell">' + scores[playerId].rank + '</div>'
-    + '  <div class="playerCol cell">' + scores[playerId].name + '</div>'
-    + '  <div class="playsCol cell">' + scores[playerId].plays + '</div>'
-    + '  <div class="lossesCol cell">' + scores[playerId].losses + '</div>'
-    + '  <div class="notLossesCol cell">' + scores[playerId].notLosses + '</div>'
-    + '  <div class="notLossScoreCol cell ' + notLossScoreSign + '">' + scores[playerId].notLossScore.toFixed(4) + '</div>'
-    + '  <div class="playScoreCol cell ' + playScoreSign + '">' + scores[playerId].playScore.toFixed(4) + '</div>'
-    + '  <div class="notLossPercentCol cell">' + scores[playerId].notLossPercent.toFixed(3) + '</div>'
-    + '</div>'
-  });
-  $(".tableBody").html(tableBodyHtml);
-  $(".tableBody").slideDown();
-};
-
-var renderTableFilters = function(model) {
-  var optionCount = 1;
-  var domainSelect = document.getElementById("domainSelect");
-  for (domainId in model.domains) {
-    domainSelect.options[optionCount] = new Option(model.domains[domainId], domainId, false, domainId == model.domainId);
-    optionCount++;
-  }
 };
 
 var easeOutQuad = function(x, t, b, c, d) {
