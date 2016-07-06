@@ -34,7 +34,7 @@ section {
 }
 
 .content {
-  max-width: 744px;
+  max-width: 792px;
   margin: auto;
 }
 
@@ -62,7 +62,7 @@ form label {
 
 #submitButton {
   height: 28px;
-  padding: 4px 24px;
+  padding: 4px 48px;
   margin: 0 0 0 20px;
   background: none;
   box-shadow: none;
@@ -96,6 +96,10 @@ tbody td {
 td.selected { font-weight: bold; }
 td.positiveScore { color: darkgreen; }
 td.negativeScore { color: darkred; }
+
+.rankCol {
+  min-width: 48px;
+}
 
 .playsCol,
 .lossesCol {

@@ -39,7 +39,7 @@ app.get("/gameData", function(req, res) {
       losses: 0,
       notLosses: 0,
       notLossScore: 0,
-      playScore: 0
+      playScore: 0,
     };
   }
 
@@ -62,6 +62,20 @@ app.get("/gameData", function(req, res) {
   for (playerId in scores) {
     scores[playerId].notLossPercent = 100 * scores[playerId].notLosses / scores[playerId].plays;
   }
+
+  var rankedPlayerIds = Object.keys(players).sort(function(playerId, otherId) {
+    if (scores[otherId].notLossScore != scores[playerId].notLossScore) {
+      return scores[otherId].notLossScore - scores[playerId].notLossScore;
+    } else if (scores[otherId].playScore != scores[playerId.playScore]) {
+      return scores[otherId].playScore - scores[playerId].playScore;
+    } else {
+      return scores[otherId].plays - scores[playerId].plays;
+    }
+  });
+  rankedPlayerIds.forEach(function(playerId, i) {
+    scores[playerId].rank = i + 1;
+  });
+
 
   res.json({
     domainId: domainId,

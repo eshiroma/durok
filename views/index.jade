@@ -37,11 +37,12 @@ body
         table(class="scoreTable")
           thead
             tr
+              td(class="rankCol sortableHeader selected", data-stat-name="rank") Rank
               td(class="playerCol sortableHeader", data-stat-name="name") Player
               td(class="playsCol sortableHeader", data-stat-name="plays") Plays
               td(class="lossesCol sortableHeader", data-stat-name="losses") Losses
               td(class="notLossesCol sortableHeader", data-stat-name="notLosses") Not Losses
-              td(class="notLossScoreCol sortableHeader selected", data-stat-name="notLossScore") Not Loss Score
+              td(class="notLossScoreCol sortableHeader", data-stat-name="notLossScore") Not Loss Score
               td(class="playScoreCol sortableHeader", data-stat-name="playScore") Play Score
               td(class="notLossPercentCol sortableHeader", data-stat-name="notLossPercent") Not Loss %
           tbody

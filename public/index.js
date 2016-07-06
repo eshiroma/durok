@@ -1,18 +1,17 @@
 $(document).ready(function() {
-  // initial page render
+    // initial page render
   render();
 
-  // TODO: submit form on "enter" keypress
-  // $("#scoreFiltersForm").bind("enterKey", onFormSubmit);
   $("#submitButton").click(onFilterButtonClick);
   $(".sortableHeader").click(onSortableHeaderClick);
 });
 
 var prevSortByStat = undefined;
-var sortByStat = "notLossScore";
+var sortByStat = "rank";
 var isDescending = true;
 
 const statInfo = {
+  "rank": { defaultIsDescending: false },
   "name": { defaultIsDescending: false },
   "plays": { defaultIsDescending: true },
   "notLosses": { defaultIsDescending: true },
@@ -57,6 +56,9 @@ var render = function(domainId, startDate, endDate) {
 var rankPlayerIds = function(scores, stat) {
   return Object.keys(scores).sort(function(playerId, otherId) {
     switch(stat) {
+      case "rank":
+        return scores[playerId].rank - scores[otherId].rank
+        break;
       case "name":
         if (scores[playerId].name <= scores[otherId].name) {
           return -1;
@@ -89,7 +91,7 @@ var rankPlayerIds = function(scores, stat) {
 var renderTable = function(scores) {
   var tableBodyHtml = "";
 
-  var rankedPlayerIds = rankPlayerIds(scores);
+  var rankedPlayerIds = rankPlayerIds(scores, sortByStat);
   // Reverse sorting if the header was already selected
   if (prevSortByStat === sortByStat && statInfo[sortByStat].defaultIsDescending === isDescending) {
     isDescending = !isDescending;
@@ -103,6 +105,7 @@ var renderTable = function(scores) {
     var playScoreSign = scores[playerId].playScore >= 0 ? "positiveScore" : "negativeScore";
     
     tableBodyHtml += '<tr class="playerRow">'
+    + '  <td class="rankCol">' + scores[playerId].rank + '</td>'
     + '  <td class="playerCol">' + scores[playerId].name + '</td>'
     + '  <td class="playsCol">' + scores[playerId].plays + '</td>'
     + '  <td class="lossesCol">' + scores[playerId].losses + '</td>'
