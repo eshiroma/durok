@@ -11,20 +11,20 @@ $(document).ready(function() {
   // set up tooltips
   $(".tooltip").hide();
   $(".tooltipTarget").mouseout(function(e) {
-    $(".tooltip").hide();
+    $(".tooltip").fadeOut(300);
   });
   $("#notLossTooltipTarget").mouseover(function(e) {
     console.log(e.clientY, e.clientX);
     var top = e.clientY + $(document).scrollTop();
     var left = e.clientX + $(document).scrollLeft() + 16;
-    $("#notLossTooltip").show();
+    $("#notLossTooltip").fadeIn(300);
     $("#notLossTooltip").offset({ top: top, left: left });
   });
   $("#playScoreTooltipTarget").mouseover(function(e) {
     console.log(e.clientY, e.clientX);
     var top = e.clientY + $(document).scrollTop();
     var left = e.clientX + $(document).scrollLeft() + 16;
-    $("#playScoreTooltip").show();
+    $("#playScoreTooltip").fadeIn(300);
     $("#playScoreTooltip").offset({ top: top, left: left });
   });
 });
@@ -112,33 +112,36 @@ var rankPlayerIds = function(scores, stat) {
 };
 
 var renderTable = function(scores) {
-  var tableBodyHtml = "";
+  $(".tableBody").slideUp(function() {
+    var tableBodyHtml = "";
 
-  var rankedPlayerIds = rankPlayerIds(scores, sortByStat);
-  // Reverse sorting if the header was already selected
-  if (prevSortByStat === sortByStat) {
-    isDescending = !isDescending;
-    rankedPlayerIds.reverse();
-  } else {
-    isDescending = statInfo[sortByStat].defaultIsDescending;
-  }
+    var rankedPlayerIds = rankPlayerIds(scores, sortByStat);
+    // Reverse sorting if the header was already selected
+    if (prevSortByStat === sortByStat) {
+      isDescending = !isDescending;
+      rankedPlayerIds.reverse();
+    } else {
+      isDescending = statInfo[sortByStat].defaultIsDescending;
+    }
 
-  rankedPlayerIds.forEach(function(playerId) {
-    var notLossScoreSign = scores[playerId].notLossScore >= 0 ? "positiveScore" : "negativeScore";
-    var playScoreSign = scores[playerId].playScore >= 0 ? "positiveScore" : "negativeScore";
-    
-    tableBodyHtml += '<div class="row">'
-    + '  <div class="rankCol cell">' + scores[playerId].rank + '</div>'
-    + '  <div class="playerCol cell">' + scores[playerId].name + '</div>'
-    + '  <div class="playsCol cell">' + scores[playerId].plays + '</div>'
-    + '  <div class="lossesCol cell">' + scores[playerId].losses + '</div>'
-    + '  <div class="notLossesCol cell">' + scores[playerId].notLosses + '</div>'
-    + '  <div class="notLossScoreCol cell ' + notLossScoreSign + '">' + scores[playerId].notLossScore.toFixed(4) + '</div>'
-    + '  <div class="playScoreCol cell ' + playScoreSign + '">' + scores[playerId].playScore.toFixed(4) + '</div>'
-    + '  <div class="notLossPercentCol cell">' + scores[playerId].notLossPercent.toFixed(3) + '</div>'
-    + '</div>'
+    rankedPlayerIds.forEach(function(playerId) {
+      var notLossScoreSign = scores[playerId].notLossScore >= 0 ? "positiveScore" : "negativeScore";
+      var playScoreSign = scores[playerId].playScore >= 0 ? "positiveScore" : "negativeScore";
+      
+      tableBodyHtml += '<div class="row">'
+      + '  <div class="rankCol cell">' + scores[playerId].rank + '</div>'
+      + '  <div class="playerCol cell">' + scores[playerId].name + '</div>'
+      + '  <div class="playsCol cell">' + scores[playerId].plays + '</div>'
+      + '  <div class="lossesCol cell">' + scores[playerId].losses + '</div>'
+      + '  <div class="notLossesCol cell">' + scores[playerId].notLosses + '</div>'
+      + '  <div class="notLossScoreCol cell ' + notLossScoreSign + '">' + scores[playerId].notLossScore.toFixed(4) + '</div>'
+      + '  <div class="playScoreCol cell ' + playScoreSign + '">' + scores[playerId].playScore.toFixed(4) + '</div>'
+      + '  <div class="notLossPercentCol cell">' + scores[playerId].notLossPercent.toFixed(3) + '</div>'
+      + '</div>'
+    });
+    $(".tableBody").html(tableBodyHtml);
+    $(".tableBody").slideDown();
   });
-  $(".tableBody").html(tableBodyHtml);
 };
 
 var renderTableFilters = function(model) {
