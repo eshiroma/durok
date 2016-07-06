@@ -96,7 +96,7 @@ var rankPlayerIds = function(scores, stat) {
         return scores[otherId].notLosses - scores[playerId].notLosses;
         break; 
       case "losses":
-        return scores[otherId].losses - scores[playerId].losses;
+        return scores[playerId].losses - scores[otherId].losses;
         break; 
       case "notLossScore":
         return scores[otherId].notLossScore - scores[playerId].notLossScore;
@@ -116,7 +116,7 @@ var renderTable = function(scores) {
 
   var rankedPlayerIds = rankPlayerIds(scores, sortByStat);
   // Reverse sorting if the header was already selected
-  if (prevSortByStat === sortByStat && statInfo[sortByStat].defaultIsDescending === isDescending) {
+  if (prevSortByStat === sortByStat) {
     isDescending = !isDescending;
     rankedPlayerIds.reverse();
   } else {
