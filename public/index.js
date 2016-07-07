@@ -13,10 +13,14 @@ $(document).ready(function() {
   render();
 });
 
+var model;
+
 var prevSortByStat = undefined;
 var sortByStat = "rank";
 var isDescending = true;
-var model;
+
+var selectedPlayerId;
+var selectedPlayerCount = 0;
 
 const STAT_INFO = {
   "rank": { defaultIsDescending: false },
@@ -229,7 +233,11 @@ var renderFilters = function(model) {
 };
 
 var renderNotLossSection = function(model) {
-  var playerId = 1;
+  selectedPlayerId = 1;
+  var playerAnalysis = model.stats.playerAnalyses[selectedPlayerId];
+
+  var notLossCount = playerAnalysis.notLossCounts[selectedPlayerCount];
+  var lossCount = playerAnalysis.gameCounts[selectedPlayerCount] - notLossCount;
 
   var width = 300;
   var height = 300;
@@ -237,14 +245,19 @@ var renderNotLossSection = function(model) {
   var innerRadius = outerRadius / 2;
 
   var dataset = [
-    { stat: "notLosses", label: "Not losses", count: 13 },
-    { stat: "losses", label: "Losses", count: 1 }
+    {
+      stat: "notLosses",
+      label: "Not losses",
+      color: "#00cccc",
+      count: notLossCount
+    },
+    {
+      stat: "losses",
+      label: "Losses",
+      color: "#ffcc00",
+      count: lossCount
+    }
   ];
-
-  var colors = {
-    "losses": "#ffcc00",
-    "notLosses": "#00cccc"
-  }
 
   var svg = d3.select("#notLossesChart")
     .append("svg")
@@ -266,7 +279,7 @@ var renderNotLossSection = function(model) {
     .append("path")
     .attr("d", arc)
     .attr("fill", function(d, i) {
-      return colors[d.data.stat];
+      return d.data.color;
     });
 };
 

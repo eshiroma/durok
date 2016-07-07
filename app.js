@@ -41,7 +41,7 @@ app.get("/gameData", function(req, res) {
     players: players,
     games: games,
     scores: scores,
-    playerAnalyses: playerAnalyses
+    stats: playerAnalyses
   });
 });
 

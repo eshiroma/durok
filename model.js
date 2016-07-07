@@ -350,6 +350,7 @@ function Model() {
 
     var playerAnalyses = {};
     Object.keys(playerInfos).forEach(function(playerId) {
+      playerId = parseInt(playerId)
       playerAnalyses[playerId] = this.getPlayerAnalysis(playerId, domainId, startDate, endDate);
     }.bind(this));
 
