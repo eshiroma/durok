@@ -93,6 +93,7 @@ tbody td {
 
 td {
   height: 32px;
+  padding-left: 0px;
 }
 
 thead td.selected {

@@ -208,6 +208,80 @@ function Model() {
     }
     return result;
   };
+
+  this.getScores = function(domainId, startDate, endDate) {
+    var gameInfo = this.getAllGameInfo(domainId, startDate, endDate);
+    var playerInfo = this.getAllPlayerInfo(domainId, startDate, endDate);
+    var scores = {};
+
+    for (playerId in playerInfo) {
+      scores[playerId] = {
+        name: playerInfo[playerId].name,
+        plays: 0,
+        losses: 0,
+        notLosses: 0,
+        notLossScore: 0,
+        playScore: 0,
+        streak: 0
+      };
+    }
+
+    for (gameId in gameInfo) {
+      var numPlayers = gameInfo[gameId].players.length;
+      gameInfo[gameId].players.forEach(function(playerId) {
+        scores[playerId].plays++;
+        if (gameInfo[gameId].durokId === playerId) {
+          scores[playerId].losses++;
+          scores[playerId].notLossScore -= 1;
+          scores[playerId].playScore -= 1 - (1 / numPlayers);
+        } else {
+          scores[playerId].notLosses++;
+          scores[playerId].notLossScore += 1 / (numPlayers - 1);
+          scores[playerId].playScore += 1 / numPlayers;
+        }
+      });
+    }
+
+    for (playerId in scores) {
+      scores[playerId].notLossPercent = 100 * scores[playerId].notLosses / scores[playerId].plays;
+    }
+
+    // compute ranks
+    var rankedPlayerIds = Object.keys(playerInfo).sort(function(playerId, otherId) {
+      if (scores[otherId].notLossScore != scores[playerId].notLossScore) {
+        return scores[otherId].notLossScore - scores[playerId].notLossScore;
+      } else if (scores[otherId].playScore != scores[playerId.playScore]) {
+        return scores[otherId].playScore - scores[playerId].playScore;
+      } else {
+        return scores[otherId].plays - scores[playerId].plays;
+      }
+    });
+    rankedPlayerIds.forEach(function(playerId, i) {
+      scores[playerId].rank = i + 1;
+    });
+
+    // compute not loss streaks
+    var gameIdsByDate = Object.keys(gameInfo).sort(function(gameId, otherId) {
+      return gameInfo[gameId].date.getTime() - gameInfo[otherId].date.getTime();
+    });
+    var currStreaks = {};
+    Object.keys(playerInfo).forEach(function(playerId) {
+      currStreaks[playerId] = 0;
+    });
+
+    gameIdsByDate.forEach(function(gameId) {
+      gameInfo[gameId].players.forEach(function(playerId) {
+        if (gameInfo[gameId].durokId === playerId) {
+          currStreaks[playerId] = 0;
+        } else {
+          currStreaks[playerId]++;
+          scores[playerId].streak = Math.max(currStreaks[playerId], scores[playerId].streak);
+        }
+      });
+    });
+
+    return scores;
+  };
 };
 
 module.exports = Model;
