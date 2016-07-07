@@ -144,7 +144,7 @@ function Model() {
     return result;
   };
 
-  // { name: playerName, gamesResults: gameId -> isDurok }
+  // { name: playerName, gameResults: gameId -> isDurok }
   this.getPlayerInfo = function(playerId, domainId, startDate, endDate) {
     if (!players[playerId]) {
       console.error("Invalid player id: ", playerId);
@@ -164,7 +164,7 @@ function Model() {
     }
   };
 
-  // playerId -> { name: playerName, gamesResults: gameId -> isDurok }
+  // playerId -> { name: playerName, gameResults: gameId -> isDurok }
   this.getAllPlayerInfo = function(domainId, startDate, endDate) {
     var result = {};
     for (var playerId in players) {
@@ -209,6 +209,7 @@ function Model() {
     return result;
   };
 
+  // playerId -> { name, plays, losses, notLosses, notLossScore, notLossPercent, playScore, streak }
   this.getScores = function(domainId, startDate, endDate) {
     var gameInfo = this.getAllGameInfo(domainId, startDate, endDate);
     var playerInfo = this.getAllPlayerInfo(domainId, startDate, endDate);
@@ -281,6 +282,81 @@ function Model() {
     });
 
     return scores;
+  };
+
+  var getNotLossRatios = function(playerId, gameIds) {
+    if (gameIds.length === 0) { return; }
+
+    var notLossGameCounts = {};
+    var gamesPerPlayerCount = getGamesPerPlayerCount(playerId, gameIds);
+
+    gameIds.forEach(function(gameId) {
+      var playerCount = games[gameId].playerCount;
+      notLossGameCounts[playerCount] = 0;
+    });
+    gameIds.forEach(function(gameId) {
+      var playerCount = games[gameId].playerCount;
+      if (games[gameId].durokId !== playerId) {
+        notLossGameCounts[playerCount]++;
+      }
+    });
+
+    var result = {};
+    Object.keys(notLossGameCounts).forEach(function(playerCount) {
+      result[playerCount] = notLossGameCounts[playerCount] / gamesPerPlayerCount[playerCount];
+    });
+
+    var totalNotLosses = gameIds.reduce(function(total, gameId) {
+      return games[gameId].durokId === playerId ? total : total + 1;
+    }, 0);
+    result[0] = totalNotLosses / gameIds.length;
+
+    return result;
+  };
+
+  var getGamesPerPlayerCount = function(playerId, gameIds) {
+    var result = {};
+
+    gameIds.forEach(function(gameId) {
+      var playerCount = games[gameId].playerCount;
+      result[playerCount] = 0;
+    });
+    gameIds.forEach(function(gameId) {
+      var playerCount = games[gameId].playerCount;
+      result[playerCount]++;
+    });
+
+    return result;
+  };
+
+  // {
+  //    notLossRatios: playerCount -> notLossPercent,
+  //    gamesPerPlayerCount: playerCount -> gameCount,
+  //    timeSeriesGames: [gameId],
+  //    timeSeriesByGame: stat -> [cumulativeStatValueForGame]
+  //    timeSeriesDates: [date],
+  //    timeSeriesByDate: stat -> [cumulativeStatValueForDate]
+  // }
+  this.getPlayerAnalysis = function(playerId, domainId, startDate, endDate) {
+    var playerInfo = this.getPlayerInfo(playerId, domainId, startDate, endDate);
+
+    var timeSeriesGames = Object.keys(playerInfo.gameResults).sort(function(gameId, otherId) {
+      return games[gameId].date.getTime() - games[otherId].date.getTime();
+    });
+
+    var notLossRatios = getNotLossRatios(playerId, timeSeriesGames);
+    var gamesPerPlayerCount = getGamesPerPlayerCount(playerId, timeSeriesGames);
+  };
+
+  // {
+  //    playerId -> { playerAnalysis },
+  //    timeSeriesGames: [gameId],
+  //    timeSeriesByGameAverages: stat -> [cumulativeStatValueForGame]
+  //    timeSeriesDates: [date],
+  //    timeSerieByDateAverages: stat -> [cumulativeStatValueForDate]
+  // }
+  this.getAllPlayersAnalysis = function(domainId, startDate, endDate) {
+
   };
 };
 
