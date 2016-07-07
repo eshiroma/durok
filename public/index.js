@@ -1,26 +1,9 @@
 $(document).ready(function() {
-  // set up game filter and listeners
-  $("#filtersWrapper").hide();
-  $(window).scroll(function(e) {
-    var minScroll = 100;
-    var maxScroll = $("section.scores").position().top + $("section.scores").height() - minScroll;
-    if ($(this).scrollTop() > minScroll && $(this).scrollTop() < maxScroll) {
-      if (!$("#filtersWrapper").is(":visible")) {
-        $("#filtersWrapper").fadeIn();
-      }
-    } else if ($("#filtersWrapper").is(":visible")) {
-      $("#filtersWrapper").fadeOut();
-    }
-  });
-  $("#domainSelect").change(filterData);
-  $("#gameFilters input").change(filterData);
-  $('.filtersLabel i').click(filterData);
+  initializeFilters();
+  initializeTooltips();
 
   // set up table sorting listeners
   $(".sortableHeader").click(onSortableHeaderClick);
-
-  // set up tooltips
-  initializeTooltips();
 
   // set up initial-load table transitions
   $("table").hide();
@@ -48,6 +31,25 @@ const STAT_INFO = {
 };
 
 const TOOLTIP_TRANSITION_MS = 250;
+
+var initializeFilters = function() {
+  $("#filtersWrapper").hide();
+  $(window).scroll(function(e) {
+    var minScroll = 100;
+    var maxScroll = $("#scores").position().top + $("#scores").height() - minScroll;
+    if ($(this).scrollTop() > minScroll && $(this).scrollTop() < maxScroll) {
+      if (!$("#filtersWrapper").is(":visible")) {
+        $("#filtersWrapper").fadeIn();
+      }
+    } else if ($("#filtersWrapper").is(":visible")) {
+      $("#filtersWrapper").fadeOut();
+    }
+  });
+
+  $("#domainSelect").change(filterData);
+  $("#gameFilters input").change(filterData);
+  $('.filtersLabel i').click(filterData);
+};
 
 var initializeTooltips = function() {
   $(".tooltip").hide();
@@ -162,7 +164,9 @@ var renderRecentGamesTable = function(games, players) {
   recentGameIds.forEach(function(gameId, i) {
     tableHeadHtml += '  <td class="gameScoreCell">Game #' + (i + 1) + '</td>';
   });
-  tableHeadHtml += '  <td class="totalScoreCell">Total</td></tr></thead>';
+  tableHeadHtml += '  <td class="totalScoreCell">Total '
+  + '<i id="totalTooltipTarget" class="tooltipTarget fa fa-question-circle"></i>'
+  + '</td></tr></thead>';
 
   // determine all players to list, and build a row for each player
   var recentPlayers = [];
@@ -202,6 +206,12 @@ var renderRecentGamesTable = function(games, players) {
   tableBodyHtml += '</tbody>';
 
   $(".recentGamesTable").html(tableHeadHtml + tableBodyHtml);
+
+  // Now set the tooltip listener
+  $("#totalTooltipTarget").mouseover(tooltipMouseoverFunction($("#totalTooltip")));
+  $("#totalTooltipTarget").mouseout(function(e) {
+    $(".tooltip").fadeOut(TOOLTIP_TRANSITION_MS);
+  });
 };
 
 var renderFilters = function(model) {

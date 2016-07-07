@@ -9,96 +9,98 @@ head
   script(src="index.js")
 
 body
-    section(class="banner")
-      h1 Durok
+  section(id="topCarousel" class="banner")
+    h1 Durok
 
-    div(id="filtersWrapper")
-      form(id="gameFilters", onsubmit="return false;")
-          span(class="filtersLabel") Game filters <i class="fa fa-filter" aria-hidden="true"></i>
-          div(class="filtersWrapper")
-            span(class="domainSelectLabel label") Domain
-            select(id="domainSelect", name="domainId")
-              option(value="0") All
-            span(class="dateInputLabel label") Start/end date
-            input(class="startDate", type="date", name="startDate")
-            input(class="endDate", type="date", name="endDate")
-    
-    section(class="scores")
+  div(id="filtersWrapper")
+    form(id="gameFilters", onsubmit="return false;")
+        span(class="filtersLabel") Game filters <i class="fa fa-filter"></i>
+        div(class="filtersWrapper")
+          span(class="domainSelectLabel label") Domain
+          select(id="domainSelect", name="domainId")
+            option(value="0") All
+          span(class="dateInputLabel label") Start/end date
+          input(class="startDate", type="date", name="startDate")
+          input(class="endDate", type="date", name="endDate")
+  
+  section(id="scores")
 
-      div(class="content")
-        h1 Scores
+    div(class="content")
+      h1 Scores
 
-        h2(class="rankingsHeader") Rankings
-        div(class="noRankingsMessage noDataMessage") There are no games in the selected date range (no rankings)
-        div(class="scoreTableWrapper tableWrapper")
-          table(class="scoreTable")
-            thead
-              tr
-                td(class="rankCol sortableHeader selected", data-stat-name="rank") Rank
-                td(class="playerCol sortableHeader", data-stat-name="name") Player
-                td(class="playsCol sortableHeader", data-stat-name="plays") Plays
-                td(class="lossesCol sortableHeader", data-stat-name="losses") Losses
-                td(class="notLossesCol sortableHeader", data-stat-name="notLosses") Not Losses
-                td(class="notLossScoreCol sortableHeader", data-stat-name="notLossScore") Not Loss Score <i id="notLossTooltipTarget" class="tooltipTarget fa fa-question-circle" aria-hidden="true"></i>
-                td(class="playScoreCol sortableHeader", data-stat-name="playScore") Play Score <i id="playScoreTooltipTarget" class="tooltipTarget fa fa-question-circle" aria-hidden="true"></i>
-                td(class="notLossPercentCol sortableHeader", data-stat-name="notLossPercent") Not Loss %
-                td(class="streakCol sortableHeader", data-stat-name="streak") Streak
-            tbody
+      h2(class="rankingsHeader") Rankings
+      div(class="noRankingsMessage noDataMessage") There are no games in the selected date range (no rankings)
+      div(class="scoreTableWrapper tableWrapper")
+        table(class="scoreTable")
+          thead
+            tr
+              td(class="rankCol sortableHeader selected", data-stat-name="rank") Rank
+              td(class="playerCol sortableHeader", data-stat-name="name") Player
+              td(class="playsCol sortableHeader", data-stat-name="plays") Plays
+              td(class="lossesCol sortableHeader", data-stat-name="losses") Losses
+              td(class="notLossesCol sortableHeader", data-stat-name="notLosses") Not Losses
+              td(class="notLossScoreCol sortableHeader", data-stat-name="notLossScore") Not Loss Score <i id="notLossTooltipTarget" class="tooltipTarget fa fa-question-circle"></i>
+              td(class="playScoreCol sortableHeader", data-stat-name="playScore") Play Score <i id="playScoreTooltipTarget" class="tooltipTarget fa fa-question-circle"></i>
+              td(class="notLossPercentCol sortableHeader", data-stat-name="notLossPercent") Not Loss %
+              td(class="streakCol sortableHeader", data-stat-name="streak") Streak
+          tbody
 
-        div(id="notLossTooltip" class="tooltip") -1 point per loss <br> + (1/# of non-losers) per not loss
-        div(id="playScoreTooltip" class="tooltip") -1 point per loss <br> + (1/# of players) per game
+      h2(class="recentGamesHeader") Recent games
+      div(class="noRecentGamesMessage noDataMessage") There are no games in the selected date range
+      div(class="recentGamesTableWrapper tableWrapper")
+        table(class="recentGamesTable")
 
-        h2(class="recentGamesHeader") Recent games
-        div(class="noRecentGamesMessage noDataMessage") There are no games in the selected date range
-        div(class="recentGamesTableWrapper tableWrapper")
-          table(class="recentGamesTable")
+  section(id="rules")
+    div(class="content")
+      h1 Rules
 
-    section(class="rules")
-      div(class="content")
-        h1 Rules
+      h2 Summary
+      Durok is a game with only one loser, but no winners. Players (2-8) fight to get rid of their cards in a series of attacks and defends. The loser, who is the last one in the game with cards, is declared the "Durok" (Russian for "fool").
 
-        h2 Summary
-        Durok is a game with only one loser, but no winners. Players (2-8) fight to get rid of their cards in a series of attacks and defends. The loser, who is the last one in the game with cards, is declared the "Durok" (Russian for "fool").
+      h2 Card rankings
+      ul
+        li played with a standard deck of 54 playing cards
+        li trump suit is determined upon dealing; all trump cards are higher than all non-trump cards; all other suits are of equal power
+        li aces are high, 2s are low (jokers are the highest)
+        li jokers are the highest (above aces); joker of the trump suit color is higher than the other
 
-        h2 Card rankings
-        ul
-          li played with a standard deck of 54 playing cards
-          li trump suit is determined upon dealing; all trump cards are higher than all non-trump cards; all other suits are of equal power
-          li aces are high, 2s are low (jokers are the highest)
-          li jokers are the highest (above aces); joker of the trump suit color is higher than the other
+      h2 Gameplay
+      ul <span class="listTitle">Dealing</span>
+        li the top deck card is flipped to determine the trump suit (and is used as the last card in the draw pile); this card may be rechosen at random if it is a joker
+        li each player is dealt six cards
+      ul <span class="listTitle">Attacking</span>
+        li the first move is always an attack; if the Durok of the last game is present, they attack first
+        li if there is no Durok, the player with the lowest trump card goes first (the card must be shown, but need not be played)
+        li a player may "attack" the next player with as many cards from their hand of the same number as desired
+        li the first attacker chooses the game direction (by playing either to the left or the right); direction is set for the rest of the game
+      ul <span class="listTitle">Being attacked</span>
+        li if the player has one or more cards of the same number of the attacking cards, they may (but is not obligated to) "bounce" the attack by placing at least one of these cards down, hence "attacking" the next player with all the cards (a bounced attack may be bounced again)
+        li the player may "forfeit" and simply pick up all attacking cards
+        li the player may attempt to "defend" the attack
+      ul <span class="listTitle">Defending</span>
+        li the player must "cover" all cards in the attack, as well as any other card their defense may illicit
+        li to "cover" an attacking card, the defending player must place on top of it a card which is 1) a higher number of the same suit, or 2) any trump card (if an attacking card is trump, it must be covered with a higher-ranked trump card or joker)
+        li once a player attempts to cover, any player at the table (including the attacker) may add to the attack by playing a card out of their hand with a number that is already on the table (either matches the value of the original attack, or any number used to cover, including trump)
+        li if the player covers all attacking cards (including any and all added cards), all cards on the table are "burned"; they are removed from the game, and kept face-down
+        li the player cannot cover everything, they must pick up all cards from the attack
+        li a player cannot be attacked with more than six cards (or the number of cards in their hand, if fewer than six)
+      ul <span class="listTitle">Ending an attack round</span>
+        li an attack round ends when a player either picks up all the attacking cards (with or without attempting to defend), or successfully defends an attack
+        li at the end of an attack round, all players draw back up to six cards, starting with the player who began the attack and progressing in "play order"
+        li if the draw pile runs out of cards, players simply do not draw (the face-up card is the last card in the deck)
+      ul <span class="listTitle">Starting the next attack</span>
+        li if a player is attacked and successfully defends, they then get to attack the next player
+        li if a player does not successfully defend an attack, the next player gets to attack
 
-        h2 Gameplay
-        ul <span class="listTitle">Dealing</span>
-          li the top deck card is flipped to determine the trump suit (and is used as the last card in the draw pile); this card may be rechosen at random if it is a joker
-          li each player is dealt six cards
-        ul <span class="listTitle">Attacking</span>
-          li the first move is always an attack; if the Durok of the last game is present, they attack first
-          li if there is no Durok, the player with the lowest trump card goes first (the card must be shown, but need not be played)
-          li a player may "attack" the next player with as many cards from their hand of the same number as desired
-          li the first attacker chooses the game direction (by playing either to the left or the right); direction is set for the rest of the game
-        ul <span class="listTitle">Being attacked</span>
-          li if the player has one or more cards of the same number of the attacking cards, they may (but is not obligated to) "bounce" the attack by placing at least one of these cards down, hence "attacking" the next player with all the cards (a bounced attack may be bounced again)
-          li the player may "forfeit" and simply pick up all attacking cards
-          li the player may attempt to "defend" the attack
-        ul <span class="listTitle">Defending</span>
-          li the player must "cover" all cards in the attack, as well as any other card their defense may illicit
-          li to "cover" an attacking card, the defending player must place on top of it a card which is 1) a higher number of the same suit, or 2) any trump card (if an attacking card is trump, it must be covered with a higher-ranked trump card or joker)
-          li once a player attempts to cover, any player at the table (including the attacker) may add to the attack by playing a card out of their hand with a number that is already on the table (either matches the value of the original attack, or any number used to cover, including trump)
-          li if the player covers all attacking cards (including any and all added cards), all cards on the table are "burned"; they are removed from the game, and kept face-down
-          li the player cannot cover everything, they must pick up all cards from the attack
-          li a player cannot be attacked with more than six cards (or the number of cards in their hand, if fewer than six)
-        ul <span class="listTitle">Ending an attack round</span>
-          li an attack round ends when a player either picks up all the attacking cards (with or without attempting to defend), or successfully defends an attack
-          li at the end of an attack round, all players draw back up to six cards, starting with the player who began the attack and progressing in "play order"
-          li if the draw pile runs out of cards, players simply do not draw (the face-up card is the last card in the deck)
-        ul <span class="listTitle">Starting the next attack</span>
-          li if a player is attacked and successfully defends, they then get to attack the next player
-          li if a player does not successfully defend an attack, the next player gets to attack
+      h2 Miscellaneous
+      ul <span class="listTitle">Obscure rules</span>
+        li if a player has the 2 of trump, they may override the Durok and play first (also choosing the direction), if they play the 2 of trump
+      ul <span class="listTitle">Things to note</span>
+        li "A card laid is a card played"; once you lay a card on the table (faceup, and let go), it cannot be undone
+        li it's desirable to maintain the "sanctity of the deck"; always draw in proper order!
+        li players have a right to count how many cards remain in the draw deck
 
-        h2 Miscellaneous
-        ul <span class="listTitle">Obscure rules</span>
-          li if a player has the 2 of trump, they may override the Durok and play first (also choosing the direction), if they play the 2 of trump
-        ul <span class="listTitle">Things to note</span>
-          li "A card laid is a card played"; once you lay a card on the table (faceup, and let go), it cannot be undone
-          li it's desirable to maintain the "sanctity of the deck"; always draw in proper order!
-          li players have a right to count how many cards remain in the draw deck
+  section(id="tooltips")
+    div(id="notLossTooltip" class="tooltip") -1 point per loss <br> + (1/# of non-losers) per not loss
+    div(id="playScoreTooltip" class="tooltip") -1 point per loss <br> + (1/# of players) per game
+    div(id="totalTooltip" class="tooltip") Not loss score for the day:<br>-1 point per loss <br> + (1/# of non-losers) per not loss
