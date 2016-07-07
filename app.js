@@ -103,7 +103,9 @@ app.get("/gameData", function(req, res) {
     startDate: startDate.getTime(),
     endDate: endDate.getTime(),
     domains: domains,
-    scores: scores
+    players: players,
+    games: games,
+    scores: scores,
   });
 });
 

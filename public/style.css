@@ -77,53 +77,56 @@ input, select, option {
   float: right;
 }
 
-.tableHead .cell {
+table {
+  width: 100%;
+  border-spacing: 0;
+}
+
+thead td {
   border-bottom: 2px solid #ddd;
 }
 
-.tableBody .cell {
+tbody td {
   font-size: 12px;
   border-bottom: 1px solid #ddd;
 }
 
-.cell {
-  display: inline;
+td {
   height: 32px;
-  line-height: 32px;
-  vertical-align: middle;
 }
 
-.tableHead .cell.selected {
+thead td.selected {
   font-weight: bold;
 }
 
-.cell.positiveScore { color: darkgreen; }
-.cell.negativeScore { color: darkred; }
+td.positiveScore { color: darkgreen; }
+td.negativeScore { color: darkred; }
 
-.row {
-  display: flex;
-}
-.tableBody .row:hover {
+tbody tr:hover {
   background-color: #eee;
 }
-.tableBody .row,
-.tableBody .row:hover  {
+tbody tr,
+tbody tr:hover  {
   -webkit-transition: all 0.25s ease-in-out;
   -moz-transition: all 0.25s ease-in-out;
   transition: all 0.25s ease-in-out;
 }
 
-.tableHead .rankCol { min-width: 48px; }
-.tableBody .rankCol { padding-left: 16px; min-width: 32px}
+.scoreTable thead .rankCol { min-width: 48px; }
+.scoreTable tbody .rankCol { padding-left: 16px; min-width: 32px}
+.scoreTable .playsCol,
+.scoreTable .lossesCol { min-width: 56px; }
+.scoreTable .playerCol { min-width: 184px; }
+.scoreTable .notLossScoreCol { min-width: 120px; }
+.scoreTable .playScoreCol { min-width: 104px; }
+.scoreTable .notLossPercentCol { min-width: 88px; }
+.scoreTable .notLossesCol { min-width: 80px; }
+.scoreTable .streakCol { min-width: 48px; }
 
-.playsCol,
-.lossesCol { min-width: 56px; }
-.playerCol { min-width: 192px; }
-.notLossScoreCol { min-width: 128px; }
-.playScoreCol { min-width: 104px; }
-.notLossPercentCol { min-width: 88px; }
-.notLossesCol { min-width: 80px; }
-.streakCol { min-width: 48px; }
+.recentGames .gameScoreCell { min-width: 88px; }
+.recentGames .totalScoreCell { min-width: 56px; }
+.recentGames .playerCol { width: 100%; }
+.recentGames tbody .playerCol { padding-left: 16px;}
 
 ul {
   padding: 0;

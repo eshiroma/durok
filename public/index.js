@@ -9,8 +9,10 @@ $(document).ready(function() {
   initializeTooltips();
 
   // set up (some) table transitions
-  $(".scoreTable").hide();
-  $(".scoreTable").fadeIn(600, easeOutQuad);
+  $(".table").hide();
+  $(".table").fadeIn(600, easeOutQuad);
+
+  $("#noRecentGamesMessage").hide();
 
   // initial page render
   render();
@@ -33,6 +35,7 @@ const STAT_INFO = {
 };
 
 const TOOLTIP_TRANSITION_MS = 250;
+const MAX_RECENT_GAMES = 8;
 
 var initializeTooltips = function() {
   $(".tooltip").hide();
@@ -80,14 +83,15 @@ var render = function(domainId, startDate, endDate) {
     end: endDate
   };
   $.get("/gameData", params, function(model) {
-    renderTable(model.scores);
-    renderTableFilters(model);
+    renderRankTable(model.scores);
+    renderRecentGamesTable(model.games, model.players);
+    renderFilters(model);
   });
 };
 
-var renderTable = function(scores) {
-  var tableBodyHtml = "";
-  $(".tableBody").hide();
+var renderRankTable = function(scores) {
+  var tableBodyHtml = '';
+  $(".scoreTable tbody").hide();
 
   var rankedPlayerIds = rankPlayerIds(scores, sortByStat);
   // Reverse sorting if the header was already selected
@@ -102,23 +106,90 @@ var renderTable = function(scores) {
     var notLossScoreSign = scores[playerId].notLossScore >= 0 ? "positiveScore" : "negativeScore";
     var playScoreSign = scores[playerId].playScore >= 0 ? "positiveScore" : "negativeScore";
     
-    tableBodyHtml += '<div class="row">'
-    + '  <div class="rankCol cell">' + scores[playerId].rank + '</div>'
-    + '  <div class="playerCol cell">' + scores[playerId].name + '</div>'
-    + '  <div class="playsCol cell">' + scores[playerId].plays + '</div>'
-    + '  <div class="lossesCol cell">' + scores[playerId].losses + '</div>'
-    + '  <div class="notLossesCol cell">' + scores[playerId].notLosses + '</div>'
-    + '  <div class="notLossScoreCol cell ' + notLossScoreSign + '">' + scores[playerId].notLossScore.toFixed(4) + '</div>'
-    + '  <div class="playScoreCol cell ' + playScoreSign + '">' + scores[playerId].playScore.toFixed(4) + '</div>'
-    + '  <div class="notLossPercentCol cell">' + scores[playerId].notLossPercent.toFixed(3) + '</div>'
-    + '  <div class="streakCol cell">' + scores[playerId].streak + '</div>'
-    + '</div>'
+    tableBodyHtml += '<tr>'
+    + '  <td class="rankCol cell">' + scores[playerId].rank + '</td>'
+    + '  <td class="playerCol cell">' + scores[playerId].name + '</td>'
+    + '  <td class="playsCol cell">' + scores[playerId].plays + '</td>'
+    + '  <td class="lossesCol cell">' + scores[playerId].losses + '</td>'
+    + '  <td class="notLossesCol cell">' + scores[playerId].notLosses + '</td>'
+    + '  <td class="notLossScoreCol cell ' + notLossScoreSign + '">' + scores[playerId].notLossScore.toFixed(4) + '</td>'
+    + '  <td class="playScoreCol cell ' + playScoreSign + '">' + scores[playerId].playScore.toFixed(4) + '</td>'
+    + '  <td class="notLossPercentCol cell">' + scores[playerId].notLossPercent.toFixed(3) + '</td>'
+    + '  <td class="streakCol cell">' + scores[playerId].streak + '</td>'
+    + '</tr>'
   });
-  $(".tableBody").html(tableBodyHtml);
-  $(".tableBody").slideDown();
+  $(".scoreTable tbody").html(tableBodyHtml);
+  $(".scoreTable tbody").slideDown();
 };
 
-var renderTableFilters = function(model) {
+var renderRecentGamesTable = function(games, players) {
+  $(".recentGames").hide();
+  var gameIdsByDate = Object.keys(games).sort(function(gameId, otherId) {
+    return (new Date(games[gameId].date).getTime()) - (new Date(games[otherId].date).getTime());
+  })
+  if (gameIdsByDate.length === 0) {
+    $("#noRecentGamesMessage").slideDown();
+  }
+
+  // Only include the games from the most recent date
+  var mostRecentGameDate = games[gameIdsByDate[gameIdsByDate.length - 1]].date;
+  var recentGameIds = gameIdsByDate.filter(function(gameId) {
+    return games[gameId].date === mostRecentGameDate;
+  }).slice(-MAX_RECENT_GAMES);
+
+  // create table header
+  var recentGamesHeaderHtml = 'Recent games (played on ' + dayMonthString(new Date(mostRecentGameDate)) + ')';
+  $(".recentGamesHeader").html(recentGamesHeaderHtml);
+
+  var tableHeadHtml = '<thead><tr><td class="playerCol cell">Player</td>';
+  recentGameIds.forEach(function(gameId, i) {
+    tableHeadHtml += '  <td class="gameScoreCell cell">Game #' + (i + 1) + '</td>';
+  });
+  tableHeadHtml += '  <td class="totalScoreCell cell">Total</td></tr></thead>';
+
+  // determine all players to list, and build a row for each player
+  var recentPlayers = [];
+  recentGameIds.forEach(function(gameId) {
+    var currGamePlayers = games[gameId].players;
+    currGamePlayers.forEach(function(playerId) {
+      if (recentPlayers.indexOf(playerId) < 0) {
+        recentPlayers.push(playerId);
+      }
+    });
+  });
+
+  var tableBodyHtml = '<tbody>';
+  recentPlayers.sort(function(playerId, otherId) {
+    return players[playerId].name <= players[otherId].name ? -1 : 1;
+  });
+  recentPlayers.forEach(function(playerId) {
+    tableBodyHtml += '<tr>'
+    + '  <td class="playerCol">' + players[playerId].name + '</td>';
+    var scoreTotal = 0;
+    recentGameIds.forEach(function(gameId) {
+      if (games[gameId].players.indexOf(playerId) < 0) {
+        tableBodyHtml += '  <td class="gameScoreCell"></td>'
+      } else if (games[gameId].durokId === playerId) {
+        scoreTotal -= 1;
+        tableBodyHtml += '  <td class="gameScoreCell negativeScore">-1.0000</td>';
+      } else {
+        var gameScore = 1 / (games[gameId].players.length - 1);
+        scoreTotal += gameScore;
+        tableBodyHtml += '  <td class="gameScoreCell">' + gameScore.toFixed(4) + '</td>';
+      }
+    });
+    var negativeScoreString = scoreTotal < 0 ? ' negativeScore' : '';
+    tableBodyHtml += '  <td class="totalScoreCell' + negativeScoreString + '">' + scoreTotal.toFixed(4) + '</td>';
+    tableBodyHtml += '</tr>';
+  });
+  tableBodyHtml += '</tbody>';
+
+  $("#noRecentGamesMessage").slideUp();
+  $(".recentGames").html(tableHeadHtml + tableBodyHtml);
+  $(".recentGames").slideDown();
+}
+
+var renderFilters = function(model) {
   var optionCount = 1;
   var domainSelect = document.getElementById("domainSelect");
   for (domainId in model.domains) {
@@ -134,11 +205,7 @@ var rankPlayerIds = function(scores, stat) {
         return scores[playerId].rank - scores[otherId].rank
         break;
       case "name":
-        if (scores[playerId].name <= scores[otherId].name) {
-          return -1;
-        } else {
-          return 1;
-        }
+        return scores[playerId].name <= scores[otherId].name ? -1 : 1;
         break;
       case "plays":
         return scores[otherId].plays - scores[playerId].plays;
@@ -163,6 +230,10 @@ var rankPlayerIds = function(scores, stat) {
         break;
     }
   });
+};
+
+var dayMonthString = function(date) {
+  return (date.getMonth() + 1) + "/" + date.getDate();
 };
 
 var easeOutQuad = function(x, t, b, c, d) {

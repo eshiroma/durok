@@ -25,21 +25,27 @@ body
             input(class="startDate", type="date", name="startDate")
             input(class="endDate", type="date", name="endDate")
 
-        div(class="table scoreTable")
-          div(class="tableHead row")
-              div(class="rankCol sortableHeader cell selected", data-stat-name="rank") Rank
-              div(class="playerCol sortableHeader cell", data-stat-name="name") Player
-              div(class="playsCol sortableHeader cell", data-stat-name="plays") Plays
-              div(class="lossesCol sortableHeader cell", data-stat-name="losses") Losses
-              div(class="notLossesCol sortableHeader cell", data-stat-name="notLosses") Not Losses
-              div(class="notLossScoreCol sortableHeader cell", data-stat-name="notLossScore") Not Loss Score <i id="notLossTooltipTarget" class="tooltipTarget fa fa-question-circle" aria-hidden="true"></i>
-              div(class="playScoreCol sortableHeader cell", data-stat-name="playScore") Play Score <i id="playScoreTooltipTarget" class="tooltipTarget fa fa-question-circle" aria-hidden="true"></i>
-              div(class="notLossPercentCol sortableHeader cell", data-stat-name="notLossPercent") Not Loss %
-              div(class="streakCol sortableHeader cell", data-stat-name="streak") Streak
-          div(class="tableBody")
+        h2(class="rankingsHeader") Rankings
+        table(class="scoreTable")
+          thead
+            tr
+              td(class="rankCol sortableHeader selected", data-stat-name="rank") Rank
+              td(class="playerCol sortableHeader", data-stat-name="name") Player
+              td(class="playsCol sortableHeader", data-stat-name="plays") Plays
+              td(class="lossesCol sortableHeader", data-stat-name="losses") Losses
+              td(class="notLossesCol sortableHeader", data-stat-name="notLosses") Not Losses
+              td(class="notLossScoreCol sortableHeader", data-stat-name="notLossScore") Not Loss Score <i id="notLossTooltipTarget" class="tooltipTarget fa fa-question-circle" aria-hidden="true"></i>
+              td(class="playScoreCol sortableHeader", data-stat-name="playScore") Play Score <i id="playScoreTooltipTarget" class="tooltipTarget fa fa-question-circle" aria-hidden="true"></i>
+              td(class="notLossPercentCol sortableHeader", data-stat-name="notLossPercent") Not Loss %
+              td(class="streakCol sortableHeader", data-stat-name="streak") Streak
+          tbody
 
-      div(id="notLossTooltip" class="tooltip") -1 point per loss <br> + (1/# of non-losers) per not loss
-      div(id="playScoreTooltip" class="tooltip") -1 point per loss <br> + (1/# of players) per game
+        div(id="notLossTooltip" class="tooltip") -1 point per loss <br> + (1/# of non-losers) per not loss
+        div(id="playScoreTooltip" class="tooltip") -1 point per loss <br> + (1/# of players) per game
+
+        h2(class="recentGamesHeader")
+        div(id="noRecentGamesMessage") There are no games in the selected date range
+        div(class="recentGames")
 
     section(class="rules")
       div(class="content")
