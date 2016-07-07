@@ -35,15 +35,19 @@ const TOOLTIP_TRANSITION_MS = 250;
 var initializeFilters = function() {
   $("#filtersWrapper").hide();
   $(window).scroll(function(e) {
-    var minScroll = 100;
-    var maxScroll = $("#scores").position().top + $("#scores").height() - minScroll;
-    if ($(this).scrollTop() > minScroll && $(this).scrollTop() < maxScroll) {
-      if (!$("#filtersWrapper").is(":visible")) {
-        $("#filtersWrapper").fadeIn();
+    clearTimeout($.data(this, 'scrollTimer'));
+    // Wait a moment after scrolling to show/hide filter bar
+    $.data(this, 'scrollTimer', setTimeout(function() {
+      var minScroll = 100;
+      var maxScroll = $("#scores").position().top + $("#scores").height() - minScroll;
+      if ($(this).scrollTop() > minScroll && $(this).scrollTop() < maxScroll) {
+        if (!$("#filtersWrapper").is(":visible")) {
+          $("#filtersWrapper").fadeIn();
+        }
+      } else if ($("#filtersWrapper").is(":visible")) {
+        $("#filtersWrapper").fadeOut();
       }
-    } else if ($("#filtersWrapper").is(":visible")) {
-      $("#filtersWrapper").fadeOut();
-    }
+    }, 200));
   });
 
   $("#domainSelect").change(filterData);
