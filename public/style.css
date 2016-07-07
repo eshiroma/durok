@@ -107,9 +107,9 @@ tbody tr:hover {
 }
 tbody tr,
 tbody tr:hover  {
-  -webkit-transition: all 0.25s ease-in-out;
-  -moz-transition: all 0.25s ease-in-out;
-  transition: all 0.25s ease-in-out;
+  -webkit-transition: all 0.2s ease-in-out;
+  -moz-transition: all 0.2s ease-in-out;
+  transition: all 0.2s ease-in-out;
 }
 
 .scoreTable thead .rankCol { min-width: 48px; }
@@ -123,9 +123,13 @@ tbody tr:hover  {
 .scoreTable .notLossesCol { min-width: 80px; }
 .scoreTable .streakCol { min-width: 48px; }
 
-.recentGamesTable .gameScoreCell { min-width: 72px; max-width: 120px; }
+.recentGamesTable .gameScoreCell { min-width: 80px; max-width: 120px; }
 .recentGamesTable .totalScoreCell { max-width: 64px; }  
-.recentGamesTable tbody .playerCol { padding-left: 16px; min-width: 184px; }
+.recentGamesTable tbody .playerCol { padding-left: 16px; min-width: 216px; }
+
+.tableWrapper {
+  overflow-x: scroll;
+}
 
 ul {
   padding: 0;

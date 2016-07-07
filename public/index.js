@@ -34,7 +34,6 @@ const STAT_INFO = {
 };
 
 const TOOLTIP_TRANSITION_MS = 250;
-const MAX_RECENT_GAMES = 8;
 
 var initializeTooltips = function() {
   $(".tooltip").hide();
@@ -139,7 +138,7 @@ var renderRecentGamesTable = function(games, players) {
   var mostRecentGameDate = games[gameIdsByDate[gameIdsByDate.length - 1]].date;
   var recentGameIds = gameIdsByDate.filter(function(gameId) {
     return games[gameId].date === mostRecentGameDate;
-  }).slice(-MAX_RECENT_GAMES);
+  });
 
   // create table header
   var recentGamesHeaderHtml = 'Recent games (played ' + dayMonthString(new Date(mostRecentGameDate)) + ')';
