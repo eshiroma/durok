@@ -12,10 +12,8 @@ body
     section(class="banner")
       h1 Durok
 
-    section(class="scores")
-      div(class="content")
-        h1 Scores
-        form(id="scoreFilters", onsubmit="return false;")
+    div(id="filtersWrapper")
+      form(id="gameFilters", onsubmit="return false;")
           span(class="filtersLabel") Game filters <i class="fa fa-filter" aria-hidden="true"></i>
           div(class="filtersWrapper")
             span(class="domainSelectLabel label") Domain
@@ -24,6 +22,11 @@ body
             span(class="dateInputLabel label") Start/end date
             input(class="startDate", type="date", name="startDate")
             input(class="endDate", type="date", name="endDate")
+    
+    section(class="scores")
+
+      div(class="content")
+        h1 Scores
 
         h2(class="rankingsHeader") Rankings
         div(class="noRankingsMessage noDataMessage") There are no games in the selected date range (no rankings)

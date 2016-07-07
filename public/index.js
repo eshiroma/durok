@@ -1,8 +1,22 @@
 $(document).ready(function() {
-  // set up table sorting listeners
+  // set up game filter and listeners
+  $("#filtersWrapper").hide();
+  $(window).scroll(function(e) {
+    var minScroll = 100;
+    var maxScroll = $("section.scores").position().top + $("section.scores").height() - minScroll;
+    if ($(this).scrollTop() > minScroll && $(this).scrollTop() < maxScroll) {
+      if (!$("#filtersWrapper").is(":visible")) {
+        $("#filtersWrapper").fadeIn();
+      }
+    } else if ($("#filtersWrapper").is(":visible")) {
+      $("#filtersWrapper").fadeOut();
+    }
+  });
   $("#domainSelect").change(filterData);
-  $("#scoreFilters input").change(filterData);
+  $("#gameFilters input").change(filterData);
+  $('.filtersLabel i').click(filterData);
 
+  // set up table sorting listeners
   $(".sortableHeader").click(onSortableHeaderClick);
 
   // set up tooltips
@@ -55,7 +69,7 @@ var tooltipMouseoverFunction = function($tooltip) {
 };
 
 var filterData = function() {
-  var filters = document.getElementById("scoreFilters");
+  var filters = document.getElementById("gameFilters");
   var domainId = filters.domainSelect.options[filters.domainSelect.selectedIndex].value;
 
   // TODO: handle time zone issues (we're spanning different dates here...)
