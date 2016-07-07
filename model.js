@@ -284,45 +284,33 @@ function Model() {
     return scores;
   };
 
-  var getNotLossRatios = function(playerId, gameIds) {
-    if (gameIds.length === 0) { return; }
-
-    var notLossGameCounts = {};
-    var gamesPerPlayerCount = getGamesPerPlayerCount(playerId, gameIds);
-
-    gameIds.forEach(function(gameId) {
-      var playerCount = games[gameId].playerCount;
-      notLossGameCounts[playerCount] = 0;
-    });
-    gameIds.forEach(function(gameId) {
-      var playerCount = games[gameId].playerCount;
-      if (games[gameId].durokId !== playerId) {
-        notLossGameCounts[playerCount]++;
-      }
-    });
-
+  var getNotLossCounts = function(playerId, gameIds) {
     var result = {};
-    Object.keys(notLossGameCounts).forEach(function(playerCount) {
-      result[playerCount] = notLossGameCounts[playerCount] / gamesPerPlayerCount[playerCount];
+    gameIds.forEach(function(gameId) {
+      var playerCount = games[gameId].playerCount;
+      if (!result[playerCount]) {
+        result[playerCount] = 0;
+      }
+      if (games[gameId].durokId !== playerId) {
+        result[playerCount]++;
+      }
     });
 
     var totalNotLosses = gameIds.reduce(function(total, gameId) {
       return games[gameId].durokId === playerId ? total : total + 1;
     }, 0);
-    result[0] = totalNotLosses / gameIds.length;
+    result[0] = totalNotLosses;
 
     return result;
   };
 
-  var getGamesPerPlayerCount = function(playerId, gameIds) {
-    var result = {};
-
+  var getGameCounts = function(playerId, gameIds) {
+    var result = { 0: gameIds.length };
     gameIds.forEach(function(gameId) {
       var playerCount = games[gameId].playerCount;
-      result[playerCount] = 0;
-    });
-    gameIds.forEach(function(gameId) {
-      var playerCount = games[gameId].playerCount;
+      if (!result[playerCount]) {
+        result[playerCount] = 0;
+      }
       result[playerCount]++;
     });
 
@@ -330,8 +318,8 @@ function Model() {
   };
 
   // {
-  //    notLossRatios: playerCount -> notLossPercent,
-  //    gamesPerPlayerCount: playerCount -> gameCount,
+  //    notLossCounts: playerCount -> notLossCount, (0 for total)
+  //    gameCounts: playerCount -> gameCount, (0 for total)
   //    timeSeriesGames: [gameId],
   //    timeSeriesByGame: stat -> [cumulativeStatValueForGame]
   //    timeSeriesDates: [date],
@@ -344,8 +332,11 @@ function Model() {
       return games[gameId].date.getTime() - games[otherId].date.getTime();
     });
 
-    var notLossRatios = getNotLossRatios(playerId, timeSeriesGames);
-    var gamesPerPlayerCount = getGamesPerPlayerCount(playerId, timeSeriesGames);
+    var notLossCounts = getNotLossCounts(playerId, timeSeriesGames);
+    var gameCounts = getGameCounts(playerId, timeSeriesGames);
+
+    console.log(notLossCounts);
+    console.log(gameCounts);
   };
 
   // {
