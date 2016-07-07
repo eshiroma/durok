@@ -32,14 +32,38 @@ const STAT_INFO = {
 
 const TOOLTIP_TRANSITION_MS = 250;
 
+var render = function(domainId, startDate, endDate) {
+  var params = {
+    domain: domainId,
+    start: startDate,
+    end: endDate
+  };
+  $.get("/gameData", params, function(newModel) {
+    model = newModel;
+
+    $(".noDataMessage").hide();
+    $(".tableWrapper").hide();
+
+    if (Object.keys(model.games).length > 0) {
+      renderRankTable(model.scores);
+      renderRecentGamesTable(model.games, model.players);
+      renderFilters(model);
+      renderNotLossSection(model);
+      $(".tableWrapper").slideDown(600);
+    } else {
+      $(".noDataMessage").slideDown(600);
+    }
+  });
+};
+
 var initializeFilters = function() {
   $("#filtersWrapper").hide();
   $(window).scroll(function(e) {
     clearTimeout($.data(this, 'scrollTimer'));
     // Wait a moment after scrolling to show/hide filter bar
     $.data(this, 'scrollTimer', setTimeout(function() {
-      var minScroll = 100;
-      var maxScroll = $("#scores").position().top + $("#scores").height() - minScroll;
+      var minScroll = 50;
+      var maxScroll = $("#scores").position().top + $("#scores").height();
       if ($(this).scrollTop() > minScroll && $(this).scrollTop() < maxScroll) {
         if (!$("#filtersWrapper").is(":visible")) {
           $("#filtersWrapper").fadeIn();
@@ -92,29 +116,6 @@ var onSortableHeaderClick = function(e) {
   prevSortByStat = sortByStat;
   sortByStat = e.currentTarget.dataset.statName;
   renderRankTable(model.scores);
-};
-
-var render = function(domainId, startDate, endDate) {
-  var params = {
-    domain: domainId,
-    start: startDate,
-    end: endDate
-  };
-  $.get("/gameData", params, function(newModel) {
-    model = newModel;
-
-    $(".noDataMessage").hide();
-    $(".tableWrapper").hide();
-
-    if (Object.keys(model.games).length > 0) {
-      renderRankTable(model.scores);
-      renderRecentGamesTable(model.games, model.players);
-      renderFilters(model);
-      $(".tableWrapper").slideDown(600);
-    } else {
-      $(".noDataMessage").slideDown(600);
-    }
-  });
 };
 
 var renderRankTable = function(scores) {
@@ -225,6 +226,48 @@ var renderFilters = function(model) {
     domainSelect.options[optionCount] = new Option(model.domains[domainId], domainId, false, domainId == model.domainId);
     optionCount++;
   }
+};
+
+var renderNotLossSection = function(model) {
+  var playerId = 1;
+
+  var width = 300;
+  var height = 300;
+  var outerRadius = Math.min(width, height) / 2;
+  var innerRadius = outerRadius / 2;
+
+  var dataset = [
+    { stat: "notLosses", label: "Not losses", count: 13 },
+    { stat: "losses", label: "Losses", count: 1 }
+  ];
+
+  var colors = {
+    "losses": "#ffcc00",
+    "notLosses": "#00cccc"
+  }
+
+  var svg = d3.select("#notLossesChart")
+    .append("svg")
+    .attr("width", width)
+    .attr("height", height)
+    .append("g")
+    .attr("transform", "translate(" + (width / 2) + "," + (height / 2) + ")");
+
+  var arc = d3.arc()
+    .innerRadius(innerRadius)
+    .outerRadius(outerRadius);
+
+  var pie = d3.pie()
+    .value(function(d) { return d.count; });
+
+  var arcs = svg.selectAll("path")
+    .data(pie(dataset))
+    .enter()
+    .append("path")
+    .attr("d", arc)
+    .attr("fill", function(d, i) {
+      return colors[d.data.stat];
+    });
 };
 
 var rankPlayerIds = function(scores, stat) {

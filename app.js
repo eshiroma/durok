@@ -31,7 +31,7 @@ app.get("/gameData", function(req, res) {
   var games = model.getAllGameInfo(domainId, startDate, endDate);
   var players = model.getAllPlayerInfo(domainId, startDate, endDate);
   var scores = model.getScores(domainId, startDate, endDate);
-  model.getPlayerAnalysis(1);
+  var playerAnalyses = model.getAllPlayerAnalyses(domainId, startDate, endDate);
 
   res.json({
     domainId: domainId,
@@ -41,6 +41,7 @@ app.get("/gameData", function(req, res) {
     players: players,
     games: games,
     scores: scores,
+    playerAnalyses: playerAnalyses
   });
 });
 

@@ -335,19 +335,27 @@ function Model() {
     var notLossCounts = getNotLossCounts(playerId, timeSeriesGames);
     var gameCounts = getGameCounts(playerId, timeSeriesGames);
 
-    console.log(notLossCounts);
-    console.log(gameCounts);
+    return { notLossCounts: notLossCounts, gameCounts: gameCounts };
   };
 
   // {
-  //    playerId -> { playerAnalysis },
+  //    playerAnalyses: playerId -> { playerAnalysis },
   //    timeSeriesGames: [gameId],
   //    timeSeriesByGameAverages: stat -> [cumulativeStatValueForGame]
   //    timeSeriesDates: [date],
   //    timeSerieByDateAverages: stat -> [cumulativeStatValueForDate]
   // }
-  this.getAllPlayersAnalysis = function(domainId, startDate, endDate) {
+  this.getAllPlayerAnalyses = function(domainId, startDate, endDate) {
+    var playerInfos = this.getAllPlayerInfo(domainId, startDate, endDate);
 
+    var playerAnalyses = {};
+    Object.keys(playerInfos).forEach(function(playerId) {
+      playerAnalyses[playerId] = this.getPlayerAnalysis(playerId, domainId, startDate, endDate);
+    }.bind(this));
+
+    return {
+      playerAnalyses: playerAnalyses
+    };
   };
 };
 
