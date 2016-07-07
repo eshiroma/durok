@@ -8,11 +8,9 @@ $(document).ready(function() {
   // set up tooltips
   initializeTooltips();
 
-  // set up (some) table transitions
-  $(".table").hide();
-  $(".table").fadeIn(600, easeOutQuad);
-
-  $("#noRecentGamesMessage").hide();
+  // set up initial-load table transitions
+  $("table").hide();
+  $("table").fadeIn(600, easeOutQuad);
 
   // initial page render
   render();
@@ -21,6 +19,7 @@ $(document).ready(function() {
 var prevSortByStat = undefined;
 var sortByStat = "rank";
 var isDescending = true;
+var model;
 
 const STAT_INFO = {
   "rank": { defaultIsDescending: false },
@@ -73,7 +72,7 @@ var onSortableHeaderClick = function(e) {
 
   prevSortByStat = sortByStat;
   sortByStat = e.currentTarget.dataset.statName;
-  render();
+  renderRankTable(model.scores);
 };
 
 var render = function(domainId, startDate, endDate) {
@@ -82,22 +81,32 @@ var render = function(domainId, startDate, endDate) {
     start: startDate,
     end: endDate
   };
-  $.get("/gameData", params, function(model) {
-    renderRankTable(model.scores);
-    renderRecentGamesTable(model.games, model.players);
-    renderFilters(model);
+  $.get("/gameData", params, function(newModel) {
+    model = newModel;
+
+    $(".noDataMessage").hide();
+    $(".tableWrapper").hide();
+
+    if (Object.keys(model.games).length > 0) {
+      renderRankTable(model.scores);
+      renderRecentGamesTable(model.games, model.players);
+      renderFilters(model);
+      $(".tableWrapper").slideDown(600);
+    } else {
+      $(".noDataMessage").slideDown(600);
+    }
   });
 };
 
 var renderRankTable = function(scores) {
   var tableBodyHtml = '';
-  $(".scoreTable tbody").hide();
-
   var rankedPlayerIds = rankPlayerIds(scores, sortByStat);
   // Reverse sorting if the header was already selected
   if (prevSortByStat === sortByStat) {
     isDescending = !isDescending;
-    rankedPlayerIds.reverse();
+    if (isDescending != STAT_INFO[sortByStat].defaultIsDescending) {
+      rankedPlayerIds.reverse();
+    }
   } else {
     isDescending = STAT_INFO[sortByStat].defaultIsDescending;
   }
@@ -119,17 +128,12 @@ var renderRankTable = function(scores) {
     + '</tr>'
   });
   $(".scoreTable tbody").html(tableBodyHtml);
-  $(".scoreTable tbody").slideDown();
 };
 
 var renderRecentGamesTable = function(games, players) {
-  $(".recentGames").hide();
   var gameIdsByDate = Object.keys(games).sort(function(gameId, otherId) {
     return (new Date(games[gameId].date).getTime()) - (new Date(games[otherId].date).getTime());
   })
-  if (gameIdsByDate.length === 0) {
-    $("#noRecentGamesMessage").slideDown();
-  }
 
   // Only include the games from the most recent date
   var mostRecentGameDate = games[gameIdsByDate[gameIdsByDate.length - 1]].date;
@@ -138,14 +142,14 @@ var renderRecentGamesTable = function(games, players) {
   }).slice(-MAX_RECENT_GAMES);
 
   // create table header
-  var recentGamesHeaderHtml = 'Recent games (played on ' + dayMonthString(new Date(mostRecentGameDate)) + ')';
+  var recentGamesHeaderHtml = 'Recent games (played ' + dayMonthString(new Date(mostRecentGameDate)) + ')';
   $(".recentGamesHeader").html(recentGamesHeaderHtml);
 
-  var tableHeadHtml = '<thead><tr><td class="playerCol cell">Player</td>';
+  var tableHeadHtml = '<thead><tr><td class="playerCol">Player</td>';
   recentGameIds.forEach(function(gameId, i) {
-    tableHeadHtml += '  <td class="gameScoreCell cell">Game #' + (i + 1) + '</td>';
+    tableHeadHtml += '  <td class="gameScoreCell">Game #' + (i + 1) + '</td>';
   });
-  tableHeadHtml += '  <td class="totalScoreCell cell">Total</td></tr></thead>';
+  tableHeadHtml += '  <td class="totalScoreCell">Total</td></tr></thead>';
 
   // determine all players to list, and build a row for each player
   var recentPlayers = [];
@@ -184,10 +188,8 @@ var renderRecentGamesTable = function(games, players) {
   });
   tableBodyHtml += '</tbody>';
 
-  $("#noRecentGamesMessage").slideUp();
-  $(".recentGames").html(tableHeadHtml + tableBodyHtml);
-  $(".recentGames").slideDown();
-}
+  $(".recentGamesTable").html(tableHeadHtml + tableBodyHtml);
+};
 
 var renderFilters = function(model) {
   var optionCount = 1;

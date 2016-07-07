@@ -123,10 +123,9 @@ tbody tr:hover  {
 .scoreTable .notLossesCol { min-width: 80px; }
 .scoreTable .streakCol { min-width: 48px; }
 
-.recentGames .gameScoreCell { min-width: 88px; }
-.recentGames .totalScoreCell { min-width: 56px; }
-.recentGames .playerCol { width: 100%; }
-.recentGames tbody .playerCol { padding-left: 16px;}
+.recentGamesTable .gameScoreCell { min-width: 72px; max-width: 120px; }
+.recentGamesTable .totalScoreCell { max-width: 64px; }  
+.recentGamesTable tbody .playerCol { padding-left: 16px; min-width: 184px; }
 
 ul {
   padding: 0;
