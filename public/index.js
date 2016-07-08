@@ -11,10 +11,14 @@ $(document).ready(function() {
 
   // set up player stats
   initializeNotLossSection();
-  $("#playerSelect").change(renderAnalysisParams);
-  $("#playerSelect").change(renderNotLossSection);
+  $("#playerSelect").change(function() {
+    renderPlayerSelect();
+    renderPlayerCountOptions();
+    renderNotLossSection();
+  });
   $("#notLossesPlayerCount").change(function() {
-    renderAnalysisParams();
+    // save the selected player count and update chart
+    selectedPlayerCount = $('input[name=playerCount]:checked').val();
     renderNotLossSection();
   });
 
@@ -57,9 +61,10 @@ var render = function(domainId, startDate, endDate) {
     $(".noDataMessage").hide();
     $(".tableWrapper").hide();
 
-    // we don't know what players there are, so just reset selected player
+    // we don't know what players there are, so just reset selected player/count
     document.getElementById("playerSelect").selectedIndex = 0;
-    renderAnalysisParams();
+    renderPlayerSelect();
+    renderPlayerCountOptions();
     renderNotLossSection();
     
     if (Object.keys(model.games).length > 0) {
@@ -244,13 +249,11 @@ var renderFilters = function() {
   });
 };
 
-var renderAnalysisParams = function() {
+var renderPlayerSelect = function() {
   // First, save the selected player id
   var playerSelect = document.getElementById("playerSelect");
   selectedPlayerId = playerSelect.options[playerSelect.selectedIndex].value;
   selectedPlayerId = selectedPlayerId === "0" ? undefined : selectedPlayerId;
-  // Now save the selected player count
-  selectedPlayerCount = $('input[name=playerCount]:checked').val();
 
   // render player dropdown
   var playerSelect = document.getElementById("playerSelect");
@@ -262,21 +265,18 @@ var renderAnalysisParams = function() {
     playerSelect.options[i + 1] = new Option(model.players[playerId].name, playerId,
       false, selectedPlayerId == playerId);
   });
+};
 
-  // render player count options
+var renderPlayerCountOptions = function() {
   var optionsRadioHtml = '<h3>Number of players</span></h3>'
-  + '<input type="radio", name="playerCount" value="0"';
-  optionsRadioHtml += !selectedPlayerCount || selectedPlayerCount == 0? ' checked' : '';
-  optionsRadioHtml += '>All<br>';
+  + '<input type="radio", name="playerCount" value="0" checked>All<br>';
 
   if (selectedPlayerId) {
     var playerGameCounts = model.stats.playerAnalyses[selectedPlayerId].gameCounts;
     Object.keys(playerGameCounts).forEach(function(playerCount, i) {
       if (playerCount != 0) {
         optionsRadioHtml += '<input type="radio", name="playerCount" value="'
-          + playerCount + '"';
-        optionsRadioHtml += playerCount == selectedPlayerCount ? ' checked' : '';
-        optionsRadioHtml += '>' + playerCount + '<br>';
+          + playerCount + '">' + playerCount + '<br>';
       }
     });
   }

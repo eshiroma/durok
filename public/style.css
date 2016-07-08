@@ -38,6 +38,7 @@ h1, h2, h3 {
 }
 
 section {
+  clear: both;
   padding: 20px;
 }
 
@@ -183,8 +184,12 @@ li .filterCategory {
 .playerSelectWrapper select,
 .playerSelectWrapper option { font-size: 16px; }
 
+#notLossesChart,
 #notLossesPlayerCount {
-  float: right;
+  float: left
+}
+#notLossesChart {
+  margin-left: 80px;
 }
 #notLossesPlayerCount input {
   vertical-align: middle;
