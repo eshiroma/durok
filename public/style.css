@@ -175,3 +175,10 @@ li .filterCategory {
   margin: auto;
 }
 
+.playerSelectWrapper {
+  float: right;
+  margin-top: 16px;
+}
+.playerSelectWrapper .label { font-size: 22px; }
+.playerSelectWrapper select,
+.playerSelectWrapper option { font-size: 18px; }

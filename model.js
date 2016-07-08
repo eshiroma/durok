@@ -317,9 +317,16 @@ function Model() {
     return result;
   };
 
+  var getExpectedLosses = function(playerId, gameIds) {
+    return gameIds.reduce(function(total, gameId) {
+      return (1 / games[gameId].players.length) + total;
+    }, 0);
+  };
+
   // {
   //    notLossCounts: playerCount -> notLossCount, (0 for total)
   //    gameCounts: playerCount -> gameCount, (0 for total)
+  //    expectedLosses: (1/# of players) per game,
   //    timeSeriesGames: [gameId],
   //    timeSeriesByGame: stat -> [cumulativeStatValueForGame]
   //    timeSeriesDates: [date],
@@ -334,6 +341,8 @@ function Model() {
 
     var notLossCounts = getNotLossCounts(playerId, timeSeriesGames);
     var gameCounts = getGameCounts(playerId, timeSeriesGames);
+    var expectedLosses = getExpectedLosses(playerId, timeSeriesGames);
+    console.log(playerId, expectedLosses);
 
     return { notLossCounts: notLossCounts, gameCounts: gameCounts };
   };
@@ -343,7 +352,7 @@ function Model() {
   //    timeSeriesGames: [gameId],
   //    timeSeriesByGameAverages: stat -> [cumulativeStatValueForGame]
   //    timeSeriesDates: [date],
-  //    timeSerieByDateAverages: stat -> [cumulativeStatValueForDate]
+  //    timeSeriesByDateAverages: stat -> [cumulativeStatValueForDate]
   // }
   this.getAllPlayerAnalyses = function(domainId, startDate, endDate) {
     var playerInfos = this.getAllPlayerInfo(domainId, startDate, endDate);

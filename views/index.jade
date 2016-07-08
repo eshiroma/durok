@@ -15,14 +15,14 @@ body
 
   div(id="filtersWrapper")
     form(id="gameFilters", onsubmit="return false;")
-        span(class="filtersLabel") Game filters <i class="fa fa-filter"></i>
-        div(class="filtersWrapper")
-          span(class="domainSelectLabel label") Domain
-          select(id="domainSelect", name="domainId")
-            option(value="0") All
-          span(class="dateInputLabel label") Start/end date
-          input(class="startDate", type="date", name="startDate")
-          input(class="endDate", type="date", name="endDate")
+      span(class="filtersLabel") Game filters <i class="fa fa-filter"></i>
+      div(class="filtersWrapper")
+        span(class="domainSelectLabel label") Domain
+        select(id="domainSelect", name="domainId")
+          option(value="0", selected) All
+        span(class="dateInputLabel label") Start/end date
+        input(class="startDate", type="date", name="startDate")
+        input(class="endDate", type="date", name="endDate")
   
   section(id="scores")
 
@@ -51,9 +51,18 @@ body
       div(class="recentGamesTableWrapper tableWrapper")
         table(class="recentGamesTable")
 
-      h2(class="playerAnalyses") Player analysis
-      div(id="notLossRatio")
-        div(id="notLossesChart")
+      
+      div(id="playerAnalysis")
+        div(class="playerSelectWrapper")
+          span(class="playerSelectLabel label") Player
+          select(id="playerSelect", name="playerId")
+            option(value="undefined") Select a player
+
+        h1 Player analysis
+
+        div(id="notLossRatio")
+          h2 Not loss ratio
+          div(id="notLossesChart")
 
 
   section(id="rules")

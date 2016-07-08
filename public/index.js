@@ -52,6 +52,7 @@ var render = function(domainId, startDate, endDate) {
       renderRankTable(model.scores);
       renderRecentGamesTable(model.games, model.players);
       renderFilters(model);
+      renderAnalysisParams(model);
       renderNotLossSection(model);
       $(".tableWrapper").slideDown(600);
     } else {
@@ -223,13 +224,23 @@ var renderRecentGamesTable = function(games, players) {
   });
 };
 
+// assumes that the default option is #0, and has already been hard-coded
+// textAccessorFunction = function(map, key); return text for each key
+var renderSelectOptions = function(selectId, map, textAccessorFunction) {
+  var domainSelect = document.getElementById(selectId);
+  Object.keys(map).forEach(function(key, i) {
+    domainSelect.options[i + 1] = new Option(textAccessorFunction(map, key), key);
+  });
+};
+
 var renderFilters = function(model) {
-  var optionCount = 1;
-  var domainSelect = document.getElementById("domainSelect");
-  for (domainId in model.domains) {
-    domainSelect.options[optionCount] = new Option(model.domains[domainId], domainId, false, domainId == model.domainId);
-    optionCount++;
-  }
+  renderSelectOptions("domainSelect", model.domains,
+      function(domains, domainId) { return domains[domainId]; });
+};
+
+var renderAnalysisParams = function(model) {
+  renderSelectOptions("playerSelect", model.players,
+      function(players, playerId) { return players[playerId].name; });
 };
 
 var renderNotLossSection = function(model) {
@@ -239,39 +250,50 @@ var renderNotLossSection = function(model) {
   var notLossCount = playerAnalysis.notLossCounts[selectedPlayerCount];
   var lossCount = playerAnalysis.gameCounts[selectedPlayerCount] - notLossCount;
 
-  var width = 300;
-  var height = 300;
-  var outerRadius = Math.min(width, height) / 2;
+  var pieWidth = 300;
+  var pieHeight = 300;
+  var outerRadius = Math.min(pieWidth, pieHeight) / 2;
   var innerRadius = outerRadius / 2;
 
+  var legendRectSize = 20;
+  var legendSpacing = 4;
+  var legendTextWidth = 64;
+  var legendPadding = 20;
+
+  var svgHeight = pieHeight + legendPadding + legendRectSize;
+  var svgWidth = pieWidth;
+
+  // for if there's no data (show greyed-out example data)
+  var defaultDataset = [
+    { color: "#cccccc", count: 1 },
+    { color: "#eeeeee", count: 5}
+  ];
+
+  var colors = {
+    "Losses": "#ffcc00",
+    "Not losses": "#00cccc"
+  };
+
   var dataset = [
-    {
-      stat: "notLosses",
-      label: "Not losses",
-      color: "#00cccc",
-      count: notLossCount
-    },
-    {
-      stat: "losses",
-      label: "Losses",
-      color: "#ffcc00",
-      count: lossCount
-    }
+    { label: "Losses", count: lossCount },
+    { label: "Not losses", count: notLossCount }
   ];
 
   var svg = d3.select("#notLossesChart")
     .append("svg")
-    .attr("width", width)
-    .attr("height", height)
+    .attr("width", svgWidth)
+    .attr("height", svgHeight + 50)
     .append("g")
-    .attr("transform", "translate(" + (width / 2) + "," + (height / 2) + ")");
+    .attr("transform", "translate(" + (svgWidth / 2) + "," + (svgHeight / 2) + ")");
 
+  // pie
   var arc = d3.arc()
     .innerRadius(innerRadius)
     .outerRadius(outerRadius);
 
   var pie = d3.pie()
-    .value(function(d) { return d.count; });
+    .value(function(d) { return d.count; })
+    .sort(null);
 
   var arcs = svg.selectAll("path")
     .data(pie(dataset))
@@ -279,8 +301,30 @@ var renderNotLossSection = function(model) {
     .append("path")
     .attr("d", arc)
     .attr("fill", function(d, i) {
-      return d.data.color;
+      return colors[d.data.label];
     });
+
+  // legend
+  var legend = svg.selectAll(".legend")
+    .data(Object.keys(colors))
+    .enter()
+    .append("g")
+    .attr("class", "legend")
+    .attr("transform", function(d, i)  {
+      var x = i * (legendRectSize + legendSpacing + legendTextWidth) - (svgWidth / 2);
+      var y = legendPadding + pieHeight / 2;
+      return "translate(" + x + "," + y + ")";
+    });
+
+  legend.append("rect")
+    .attr("width", legendRectSize)
+    .attr("height", legendRectSize)
+    .style("fill", function(label) { return colors[label]; });
+
+  legend.append("text")
+    .attr("x", legendRectSize + legendSpacing)
+    .attr("y", legendRectSize - legendSpacing)
+    .text(function(label) { return label; });
 };
 
 var rankPlayerIds = function(scores, stat) {
