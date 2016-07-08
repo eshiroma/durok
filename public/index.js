@@ -244,39 +244,35 @@ var renderAnalysisParams = function(model) {
 };
 
 var renderNotLossSection = function(model) {
+  var playerSelect = document.getElementById("playerSelect");
+  var selectedPlayerId = playerSelect.options[playerSelect.selectedIndex].value;
   selectedPlayerId = 1;
   var playerAnalysis = model.stats.playerAnalyses[selectedPlayerId];
-
   var notLossCount = playerAnalysis.notLossCounts[selectedPlayerCount];
   var lossCount = playerAnalysis.gameCounts[selectedPlayerCount] - notLossCount;
 
-  var pieWidth = 300;
-  var pieHeight = 300;
-  var outerRadius = Math.min(pieWidth, pieHeight) / 2;
-  var innerRadius = outerRadius / 2;
+  // to prevent hard-coding these #s
+  const pieWidth = 300;
+  const pieHeight = 300;
+  const outerRadius = Math.min(pieWidth, pieHeight) / 2;
+  const innerRadius = outerRadius / 2;
 
-  var legendRectSize = 20;
-  var legendSpacing = 4;
-  var legendTextWidth = 64;
-  var legendPadding = 20;
+  const legendRectSize = 20;
+  const legendSpacing = 4;
+  const legendTextWidth = 64;
+  const legendPadding = 20;
 
-  var svgHeight = pieHeight + legendPadding + legendRectSize;
-  var svgWidth = pieWidth;
+  const svgHeight = pieHeight + legendPadding + legendRectSize;
+  const svgWidth = pieWidth;
 
-  // for if there's no data (show greyed-out example data)
-  var defaultDataset = [
-    { color: "#cccccc", count: 1 },
-    { color: "#eeeeee", count: 5}
+  const defaultDataset = [
+    { label: "Losses", color: "#cccccc", count: 1 },
+    { label: "Not losses", color: "#eeeeee", count: 5}
   ];
 
-  var colors = {
-    "Losses": "#ffcc00",
-    "Not losses": "#00cccc"
-  };
-
   var dataset = [
-    { label: "Losses", count: lossCount },
-    { label: "Not losses", count: notLossCount }
+    { label: "Losses", color: "#ffcc00", count: lossCount },
+    { label: "NotLosses", color: "#00cccc", count: notLossCount }
   ];
 
   var svg = d3.select("#notLossesChart")
@@ -300,13 +296,13 @@ var renderNotLossSection = function(model) {
     .enter()
     .append("path")
     .attr("d", arc)
-    .attr("fill", function(d, i) {
-      return colors[d.data.label];
+    .attr("fill", function(d) {
+      return d.data.color;
     });
 
   // legend
   var legend = svg.selectAll(".legend")
-    .data(Object.keys(colors))
+    .data(dataset)
     .enter()
     .append("g")
     .attr("class", "legend")
@@ -319,12 +315,12 @@ var renderNotLossSection = function(model) {
   legend.append("rect")
     .attr("width", legendRectSize)
     .attr("height", legendRectSize)
-    .style("fill", function(label) { return colors[label]; });
+    .style("fill", function(d) { return d.color; });
 
   legend.append("text")
     .attr("x", legendRectSize + legendSpacing)
     .attr("y", legendRectSize - legendSpacing)
-    .text(function(label) { return label; });
+    .text(function(d) { return d.label; });
 };
 
 var rankPlayerIds = function(scores, stat) {
