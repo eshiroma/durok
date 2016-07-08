@@ -13,6 +13,10 @@ $(document).ready(function() {
   initializeNotLossSection();
   $("#playerSelect").change(renderAnalysisParams);
   $("#playerSelect").change(renderNotLossSection);
+  $("#notLossesPlayerCount").change(function() {
+    renderAnalysisParams();
+    renderNotLossSection();
+  });
 
   // initial page render
   render();
@@ -53,13 +57,15 @@ var render = function(domainId, startDate, endDate) {
     $(".noDataMessage").hide();
     $(".tableWrapper").hide();
 
+    // we don't know what players there are, so just reset selected player
+    document.getElementById("playerSelect").selectedIndex = 0;
     renderAnalysisParams();
+    renderNotLossSection();
     
     if (Object.keys(model.games).length > 0) {
       renderRankTable(model.scores);
       renderRecentGamesTable(model.games, model.players);
       renderFilters();
-      renderNotLossSection();
       $(".tableWrapper").slideDown(600);
     } else {
       $(".noDataMessage").slideDown(600);
@@ -259,13 +265,18 @@ var renderAnalysisParams = function() {
 
   // render player count options
   var optionsRadioHtml = '<h3>Number of players</span></h3>'
-  + '<input type="radio", name="playerCount" value="0" checked>Any<br>';
+  + '<input type="radio", name="playerCount" value="0"';
+  optionsRadioHtml += !selectedPlayerCount || selectedPlayerCount == 0? ' checked' : '';
+  optionsRadioHtml += '>All<br>';
+
   if (selectedPlayerId) {
     var playerGameCounts = model.stats.playerAnalyses[selectedPlayerId].gameCounts;
     Object.keys(playerGameCounts).forEach(function(playerCount, i) {
       if (playerCount != 0) {
         optionsRadioHtml += '<input type="radio", name="playerCount" value="'
-          + playerCount + '">' + playerCount + '<br>';
+          + playerCount + '"';
+        optionsRadioHtml += playerCount == selectedPlayerCount ? ' checked' : '';
+        optionsRadioHtml += '>' + playerCount + '<br>';
       }
     });
   }
@@ -274,8 +285,8 @@ var renderAnalysisParams = function() {
 
 var initializeNotLossSection = function() {
   // to prevent hard-coding these #s
-  const pieWidth = 300;
-  const pieHeight = 300;
+  const pieWidth = 350;
+  const pieHeight = 350;
   const outerRadius = Math.min(pieWidth, pieHeight) / 2;
   const innerRadius = outerRadius / 2;
 
