@@ -246,10 +246,7 @@ var renderAnalysisParams = function(model) {
 var renderNotLossSection = function(model) {
   var playerSelect = document.getElementById("playerSelect");
   var selectedPlayerId = playerSelect.options[playerSelect.selectedIndex].value;
-  selectedPlayerId = 1;
-  var playerAnalysis = model.stats.playerAnalyses[selectedPlayerId];
-  var notLossCount = playerAnalysis.notLossCounts[selectedPlayerCount];
-  var lossCount = playerAnalysis.gameCounts[selectedPlayerCount] - notLossCount;
+  selectedPlayerId = selectedPlayerId === "0" ? undefined : selectedPlayerId;
 
   // to prevent hard-coding these #s
   const pieWidth = 300;
@@ -266,14 +263,20 @@ var renderNotLossSection = function(model) {
   const svgWidth = pieWidth;
 
   const defaultDataset = [
-    { label: "Losses", color: "#cccccc", count: 1 },
-    { label: "Not losses", color: "#eeeeee", count: 5}
+    { label: "Losses", color: "#eeeeee", count: 1 },
+    { label: "Not losses", color: "#cccccc", count: 5}
   ];
 
-  var dataset = [
-    { label: "Losses", color: "#ffcc00", count: lossCount },
-    { label: "NotLosses", color: "#00cccc", count: notLossCount }
-  ];
+  var dataset = defaultDataset;
+  if (selectedPlayerId) {
+    var playerAnalysis = model.stats.playerAnalyses[selectedPlayerId];
+    var notLossCount = playerAnalysis.notLossCounts[selectedPlayerCount];
+    var lossCount = playerAnalysis.gameCounts[selectedPlayerCount] - notLossCount;
+    dataset = [
+      { label: "Losses", color: "#ffcc00", count: lossCount },
+      { label: "NotLosses", color: "#00cccc", count: notLossCount }
+    ];
+  }
 
   var svg = d3.select("#notLossesChart")
     .append("svg")
