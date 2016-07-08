@@ -268,6 +268,7 @@ var renderPlayerSelect = function() {
 };
 
 var renderPlayerCountOptions = function() {
+  selectedPlayerCount = 0;
   var optionsRadioHtml = '<h3>Number of players</span></h3>'
   + '<input type="radio", name="playerCount" value="0" checked>All<br>';
 
