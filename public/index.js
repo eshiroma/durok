@@ -9,6 +9,9 @@ $(document).ready(function() {
   $("table").hide();
   $("table").fadeIn(600, easeOutQuad);
 
+  // set up player stats listener
+  $("#playerSelect").change(renderNotLossSection);
+
   // initial page render
   render();
 });
@@ -53,7 +56,7 @@ var render = function(domainId, startDate, endDate) {
       renderRecentGamesTable(model.games, model.players);
       renderFilters(model);
       renderAnalysisParams(model);
-      renderNotLossSection(model);
+      renderNotLossSection();
       $(".tableWrapper").slideDown(600);
     } else {
       $(".noDataMessage").slideDown(600);
@@ -243,7 +246,7 @@ var renderAnalysisParams = function(model) {
       function(players, playerId) { return players[playerId].name; });
 };
 
-var renderNotLossSection = function(model) {
+var renderNotLossSection = function() {
   var playerSelect = document.getElementById("playerSelect");
   var selectedPlayerId = playerSelect.options[playerSelect.selectedIndex].value;
   selectedPlayerId = selectedPlayerId === "0" ? undefined : selectedPlayerId;
