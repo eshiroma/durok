@@ -256,11 +256,9 @@ var renderPlayerSelect = function() {
   selectedPlayerId = selectedPlayerId === "0" ? undefined : selectedPlayerId;
 
   // render player dropdown
+  // first clear out existing dropdown
+  $("#playerSelect").html('<option value="0">Select a player</option>');
   var playerSelect = document.getElementById("playerSelect");
-  // first clear all preexisting dropdowns
-  for (i = 1; i < playerSelect.options.length; i++) {
-    playerSelect.options[i] = null;
-  }
   Object.keys(model.players).forEach(function(playerId, i) {
     playerSelect.options[i + 1] = new Option(model.players[playerId].name, playerId,
       false, selectedPlayerId == playerId);
@@ -270,7 +268,7 @@ var renderPlayerSelect = function() {
 var renderPlayerCountOptions = function() {
   selectedPlayerCount = 0;
   var optionsRadioHtml = '<h3>Number of players</span></h3>'
-  + '<input type="radio", name="playerCount" value="0" checked>All<br>';
+  + '<input type="radio", name="playerCount" value="0" checked>Any<br>';
 
   if (selectedPlayerId) {
     var playerGameCounts = model.stats.playerAnalyses[selectedPlayerId].gameCounts;
