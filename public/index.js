@@ -9,7 +9,8 @@ $(document).ready(function() {
   $("table").hide();
   $("table").fadeIn(600, easeOutQuad);
 
-  // set up player stats listener
+  // set up player stats
+  initializeNotLossSection();
   $("#playerSelect").change(renderNotLossSection);
 
   // initial page render
@@ -51,12 +52,13 @@ var render = function(domainId, startDate, endDate) {
     $(".noDataMessage").hide();
     $(".tableWrapper").hide();
 
+    renderAnalysisParams();
+    
     if (Object.keys(model.games).length > 0) {
       renderRankTable(model.scores);
       renderRecentGamesTable(model.games, model.players);
-      renderFilters(model);
-      renderAnalysisParams(model);
-      initializeNotLossSection();
+      renderFilters();
+      renderNotLossSection();
       $(".tableWrapper").slideDown(600);
     } else {
       $(".noDataMessage").slideDown(600);
@@ -227,23 +229,24 @@ var renderRecentGamesTable = function(games, players) {
   });
 };
 
-// assumes that the default option is #0, and has already been hard-coded
-// textAccessorFunction = function(map, key); return text for each key
-var renderSelectOptions = function(selectId, map, textAccessorFunction) {
-  var domainSelect = document.getElementById(selectId);
-  Object.keys(map).forEach(function(key, i) {
-    domainSelect.options[i + 1] = new Option(textAccessorFunction(map, key), key);
+var renderFilters = function() {
+  var domainSelect = document.getElementById("domainSelect");
+  Object.keys(model.domains).forEach(function(domainId, i) {
+    domainSelect.options[i + 1] = new Option(model.domains[domainId], domainId,
+      false, model.domainId == domainId);
   });
 };
 
-var renderFilters = function(model) {
-  renderSelectOptions("domainSelect", model.domains,
-      function(domains, domainId) { return domains[domainId]; });
-};
-
-var renderAnalysisParams = function(model) {
-  renderSelectOptions("playerSelect", model.players,
-      function(players, playerId) { return players[playerId].name; });
+var renderAnalysisParams = function() {
+  var playerSelect = document.getElementById("playerSelect");
+  // first clear all preexisting dropdowns
+  for (i = 1; i < playerSelect.options.length; i++) {
+    playerSelect.options[i] = null;
+  }
+  Object.keys(model.players).forEach(function(playerId, i) {
+    playerSelect.options[i + 1] = new Option(model.players[playerId].name, playerId,
+      false, model.selectedPlayerId == playerId);
+  });
 };
 
 var initializeNotLossSection = function() {

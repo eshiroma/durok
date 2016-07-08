@@ -169,10 +169,12 @@ function Model() {
     var result = {};
     for (var playerId in players) {
       var playerInfo = this.getPlayerInfo(playerId, domainId, startDate, endDate);
-      if (playerInfo) {
+      // only include players that have played at least one relevant game
+      if (playerInfo && Object.keys(playerInfo.gameResults).length > 0) {
         result[playerId] = playerInfo;
       }
     }
+    console.log(Object.keys(result));
     return result;
   };
 
@@ -342,7 +344,6 @@ function Model() {
     var notLossCounts = getNotLossCounts(playerId, timeSeriesGames);
     var gameCounts = getGameCounts(playerId, timeSeriesGames);
     var expectedLosses = getExpectedLosses(playerId, timeSeriesGames);
-    console.log(playerId, expectedLosses);
 
     return { notLossCounts: notLossCounts, gameCounts: gameCounts };
   };
