@@ -56,7 +56,7 @@ var render = function(domainId, startDate, endDate) {
       renderRecentGamesTable(model.games, model.players);
       renderFilters(model);
       renderAnalysisParams(model);
-      renderNotLossSection();
+      initializeNotLossSection();
       $(".tableWrapper").slideDown(600);
     } else {
       $(".noDataMessage").slideDown(600);
@@ -246,11 +246,7 @@ var renderAnalysisParams = function(model) {
       function(players, playerId) { return players[playerId].name; });
 };
 
-var renderNotLossSection = function() {
-  var playerSelect = document.getElementById("playerSelect");
-  var selectedPlayerId = playerSelect.options[playerSelect.selectedIndex].value;
-  selectedPlayerId = selectedPlayerId === "0" ? undefined : selectedPlayerId;
-
+var initializeNotLossSection = function() {
   // to prevent hard-coding these #s
   const pieWidth = 300;
   const pieHeight = 300;
@@ -271,15 +267,6 @@ var renderNotLossSection = function() {
   ];
 
   var dataset = defaultDataset;
-  if (selectedPlayerId) {
-    var playerAnalysis = model.stats.playerAnalyses[selectedPlayerId];
-    var notLossCount = playerAnalysis.notLossCounts[selectedPlayerCount];
-    var lossCount = playerAnalysis.gameCounts[selectedPlayerCount] - notLossCount;
-    dataset = [
-      { label: "Losses", color: "#ffcc00", count: lossCount },
-      { label: "NotLosses", color: "#00cccc", count: notLossCount }
-    ];
-  }
 
   var svg = d3.select("#notLossesChart")
     .append("svg")
@@ -317,6 +304,76 @@ var renderNotLossSection = function() {
       var y = legendPadding + pieHeight / 2;
       return "translate(" + x + "," + y + ")";
     });
+
+  legend.append("rect")
+    .attr("width", legendRectSize)
+    .attr("height", legendRectSize)
+    .style("fill", function(d) { return d.color; });
+
+  legend.append("text")
+    .attr("x", legendRectSize + legendSpacing)
+    .attr("y", legendRectSize - legendSpacing)
+    .text(function(d) { return d.label; });
+};
+
+var renderNotLossSection = function() {
+  var playerSelect = document.getElementById("playerSelect");
+  var selectedPlayerId = playerSelect.options[playerSelect.selectedIndex].value;
+  selectedPlayerId = selectedPlayerId === "0" ? undefined : selectedPlayerId;
+
+  // to prevent hard-coding these #s
+  const pieWidth = 300;
+  const pieHeight = 300;
+  const outerRadius = Math.min(pieWidth, pieHeight) / 2;
+  const innerRadius = outerRadius / 2;
+
+  const legendRectSize = 20;
+  const legendSpacing = 4;
+  const legendTextWidth = 64;
+  const legendPadding = 20;
+
+  const svgHeight = pieHeight + legendPadding + legendRectSize;
+  const svgWidth = pieWidth;
+
+  const defaultDataset = [
+    { label: "Losses", color: "#eeeeee", count: 1 },
+    { label: "Not losses", color: "#cccccc", count: 5}
+  ];
+
+  var dataset = defaultDataset;
+  if (selectedPlayerId) {
+    var playerAnalysis = model.stats.playerAnalyses[selectedPlayerId];
+    var notLossCount = playerAnalysis.notLossCounts[selectedPlayerCount];
+    var lossCount = playerAnalysis.gameCounts[selectedPlayerCount] - notLossCount;
+    dataset = [
+      { label: "Losses", color: "#ffcc00", count: lossCount },
+      { label: "Not losses", color: "#00cccc", count: notLossCount }
+    ];
+  }
+
+  var svg = d3.select("#notLossesChart");
+
+  // pie
+  var arc = d3.arc()
+    .innerRadius(innerRadius)
+    .outerRadius(outerRadius);
+
+  var pie = d3.pie()
+    .value(function(d) { return d.count; })
+    .sort(null);
+
+  var arcs = svg.selectAll("path")
+    .data(pie(dataset));
+
+  arcs
+    .attr("d", arc)
+    .attr("fill", function(d) {
+      return d.data.color;
+    });
+
+  // legend
+  var legend = svg.selectAll(".legend")
+    .data(dataset);
 
   legend.append("rect")
     .attr("width", legendRectSize)
