@@ -365,8 +365,18 @@ var renderNotLossSection = function() {
   var arcs = svg.selectAll("path")
     .data(pie(dataset));
 
+  const transitionMs = 500;
   arcs
-    .attr("d", arc)
+    .transition()
+    .delay(function(d, i) { return i * transitionMs; })
+    .duration(transitionMs)
+    .attrTween("d", function(d) {
+      var i = d3.interpolate(d.startAngle + 0.1, d.endAngle);
+      return function(t) {
+        d.endAngle = i(t);
+        return arc(d);
+      }
+    })
     .attr("fill", function(d) {
       return d.data.color;
     });
