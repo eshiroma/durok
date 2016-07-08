@@ -11,6 +11,7 @@ $(document).ready(function() {
 
   // set up player stats
   initializeNotLossSection();
+  $("#playerSelect").change(renderAnalysisParams);
   $("#playerSelect").change(renderNotLossSection);
 
   // initial page render
@@ -238,6 +239,14 @@ var renderFilters = function() {
 };
 
 var renderAnalysisParams = function() {
+  // First, save the selected player id
+  var playerSelect = document.getElementById("playerSelect");
+  selectedPlayerId = playerSelect.options[playerSelect.selectedIndex].value;
+  selectedPlayerId = selectedPlayerId === "0" ? undefined : selectedPlayerId;
+  // Now save the selected player count
+  selectedPlayerCount = $('input[name=playerCount]:checked').val();
+
+  // render player dropdown
   var playerSelect = document.getElementById("playerSelect");
   // first clear all preexisting dropdowns
   for (i = 1; i < playerSelect.options.length; i++) {
@@ -245,8 +254,22 @@ var renderAnalysisParams = function() {
   }
   Object.keys(model.players).forEach(function(playerId, i) {
     playerSelect.options[i + 1] = new Option(model.players[playerId].name, playerId,
-      false, model.selectedPlayerId == playerId);
+      false, selectedPlayerId == playerId);
   });
+
+  // render player count options
+  var optionsRadioHtml = '<h3>Number of players</span></h3>'
+  + '<input type="radio", name="playerCount" value="0" checked>Any<br>';
+  if (selectedPlayerId) {
+    var playerGameCounts = model.stats.playerAnalyses[selectedPlayerId].gameCounts;
+    Object.keys(playerGameCounts).forEach(function(playerCount, i) {
+      if (playerCount != 0) {
+        optionsRadioHtml += '<input type="radio", name="playerCount" value="'
+          + playerCount + '">' + playerCount + '<br>';
+      }
+    });
+  }
+  $("#notLossesPlayerCount").html(optionsRadioHtml);
 };
 
 var initializeNotLossSection = function() {
@@ -314,16 +337,13 @@ var initializeNotLossSection = function() {
     .style("fill", function(d) { return d.color; });
 
   legend.append("text")
-    .attr("x", legendRectSize + legendSpacing)
+    .attr("x", legendRectSize + 2 * legendSpacing)
     .attr("y", legendRectSize - legendSpacing)
+    .attr("fill", "#555555")
     .text(function(d) { return d.label; });
 };
 
 var renderNotLossSection = function() {
-  var playerSelect = document.getElementById("playerSelect");
-  var selectedPlayerId = playerSelect.options[playerSelect.selectedIndex].value;
-  selectedPlayerId = selectedPlayerId === "0" ? undefined : selectedPlayerId;
-
   // to prevent hard-coding these #s
   const pieWidth = 300;
   const pieHeight = 300;
@@ -392,11 +412,6 @@ var renderNotLossSection = function() {
     .attr("width", legendRectSize)
     .attr("height", legendRectSize)
     .style("fill", function(d) { return d.color; });
-
-  legend.append("text")
-    .attr("x", legendRectSize + legendSpacing)
-    .attr("y", legendRectSize - legendSpacing)
-    .text(function(d) { return d.label; });
 };
 
 var rankPlayerIds = function(scores, stat) {

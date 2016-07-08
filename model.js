@@ -174,7 +174,6 @@ function Model() {
         result[playerId] = playerInfo;
       }
     }
-    console.log(Object.keys(result));
     return result;
   };
 

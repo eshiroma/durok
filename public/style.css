@@ -182,3 +182,11 @@ li .filterCategory {
 .playerSelectWrapper .label { font-size: 20px; }
 .playerSelectWrapper select,
 .playerSelectWrapper option { font-size: 16px; }
+
+#notLossesPlayerCount {
+  float: right;
+}
+#notLossesPlayerCount input {
+  vertical-align: middle;
+  margin-right: 8px;
+}
