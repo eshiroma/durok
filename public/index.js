@@ -9,14 +9,31 @@ $(document).ready(function() {
   $("table").hide();
   $("table").fadeIn(600, easeOutQuad);
 
+  // set up player stats
+  initializeNotLossSection();
+  $("#playerSelect").change(function() {
+    renderPlayerSelect();
+    renderPlayerCountOptions();
+    renderNotLossSection();
+  });
+  $("#notLossesPlayerCount").change(function() {
+    // save the selected player count and update chart
+    selectedPlayerCount = $('input[name=playerCount]:checked').val();
+    renderNotLossSection();
+  });
+
   // initial page render
   render();
 });
 
+var model;
+
 var prevSortByStat = undefined;
 var sortByStat = "rank";
 var isDescending = true;
-var model;
+
+var selectedPlayerId;
+var selectedPlayerCount = 0;
 
 const STAT_INFO = {
   "rank": { defaultIsDescending: false },
@@ -32,14 +49,43 @@ const STAT_INFO = {
 
 const TOOLTIP_TRANSITION_MS = 250;
 
+var render = function(domainId, startDate, endDate) {
+  var params = {
+    domain: domainId,
+    start: startDate,
+    end: endDate
+  };
+  $.get("/gameData", params, function(newModel) {
+    model = newModel;
+
+    $(".noDataMessage").hide();
+    $(".tableWrapper").hide();
+
+    // we don't know what players there are, so just reset selected player/count
+    document.getElementById("playerSelect").selectedIndex = 0;
+    renderPlayerSelect();
+    renderPlayerCountOptions();
+    renderNotLossSection();
+    
+    if (Object.keys(model.games).length > 0) {
+      renderRankTable(model.scores);
+      renderRecentGamesTable(model.games, model.players);
+      renderFilters();
+      $(".tableWrapper").slideDown(600);
+    } else {
+      $(".noDataMessage").slideDown(600);
+    }
+  });
+};
+
 var initializeFilters = function() {
   $("#filtersWrapper").hide();
   $(window).scroll(function(e) {
     clearTimeout($.data(this, 'scrollTimer'));
     // Wait a moment after scrolling to show/hide filter bar
     $.data(this, 'scrollTimer', setTimeout(function() {
-      var minScroll = 100;
-      var maxScroll = $("#scores").position().top + $("#scores").height() - minScroll;
+      var minScroll = 50;
+      var maxScroll = $("#scores").position().top + $("#scores").height();
       if ($(this).scrollTop() > minScroll && $(this).scrollTop() < maxScroll) {
         if (!$("#filtersWrapper").is(":visible")) {
           $("#filtersWrapper").fadeIn();
@@ -92,29 +138,6 @@ var onSortableHeaderClick = function(e) {
   prevSortByStat = sortByStat;
   sortByStat = e.currentTarget.dataset.statName;
   renderRankTable(model.scores);
-};
-
-var render = function(domainId, startDate, endDate) {
-  var params = {
-    domain: domainId,
-    start: startDate,
-    end: endDate
-  };
-  $.get("/gameData", params, function(newModel) {
-    model = newModel;
-
-    $(".noDataMessage").hide();
-    $(".tableWrapper").hide();
-
-    if (Object.keys(model.games).length > 0) {
-      renderRankTable(model.scores);
-      renderRecentGamesTable(model.games, model.players);
-      renderFilters(model);
-      $(".tableWrapper").slideDown(600);
-    } else {
-      $(".noDataMessage").slideDown(600);
-    }
-  });
 };
 
 var renderRankTable = function(scores) {
@@ -218,13 +241,216 @@ var renderRecentGamesTable = function(games, players) {
   });
 };
 
-var renderFilters = function(model) {
-  var optionCount = 1;
+var renderFilters = function() {
   var domainSelect = document.getElementById("domainSelect");
-  for (domainId in model.domains) {
-    domainSelect.options[optionCount] = new Option(model.domains[domainId], domainId, false, domainId == model.domainId);
-    optionCount++;
+  Object.keys(model.domains).forEach(function(domainId, i) {
+    domainSelect.options[i + 1] = new Option(model.domains[domainId], domainId,
+      false, model.domainId == domainId);
+  });
+};
+
+var renderPlayerSelect = function() {
+  // First, save the selected player id
+  var playerSelect = document.getElementById("playerSelect");
+  selectedPlayerId = playerSelect.options[playerSelect.selectedIndex].value;
+  selectedPlayerId = selectedPlayerId === "0" ? undefined : selectedPlayerId;
+
+  // render player dropdown
+  // first clear out existing dropdown
+  $("#playerSelect").html('<option value="0">Select a player</option>');
+  var playerSelect = document.getElementById("playerSelect");
+  Object.keys(model.players).forEach(function(playerId, i) {
+    playerSelect.options[i + 1] = new Option(model.players[playerId].name, playerId,
+      false, selectedPlayerId == playerId);
+  });
+};
+
+var renderPlayerCountOptions = function() {
+  selectedPlayerCount = 0;
+  var optionsRadioHtml = '<h3>Number of players</span></h3>'
+  + '<input type="radio", name="playerCount" value="0" checked>Any<br>';
+
+  if (selectedPlayerId) {
+    var playerGameCounts = model.stats.playerAnalyses[selectedPlayerId].gameCounts;
+    Object.keys(playerGameCounts).forEach(function(playerCount, i) {
+      if (playerCount != 0) {
+        optionsRadioHtml += '<input type="radio", name="playerCount" value="'
+          + playerCount + '">' + playerCount + '<br>';
+      }
+    });
   }
+  $("#notLossesPlayerCount").html(optionsRadioHtml);
+};
+
+var initializeNotLossSection = function() {
+  // to prevent hard-coding these #s
+  const pieWidth = 350;
+  const pieHeight = 350;
+  const outerRadius = Math.min(pieWidth, pieHeight) / 2;
+  const innerRadius = outerRadius / 2;
+
+  const legendRectSize = 20;
+  const legendSpacing = 4;
+  const legendTextWidth = 64;
+  const legendPadding = 20;
+
+  const svgHeight = pieHeight + legendPadding + legendRectSize;
+  const svgWidth = pieWidth;
+
+  const defaultDataset = [
+    { label: "Losses", color: "#eeeeee", count: 1 },
+    { label: "Not losses", color: "#cccccc", count: 5}
+  ];
+
+  var dataset = defaultDataset;
+
+  var svg = d3.select("#notLossesChart")
+    .append("svg")
+    .attr("width", svgWidth)
+    .attr("height", svgHeight + 50)
+    .append("g")
+    .attr("transform", "translate(" + (svgWidth / 2) + "," + (svgHeight / 2) + ")");
+
+  // pie
+  var arc = d3.arc()
+    .innerRadius(innerRadius)
+    .outerRadius(outerRadius);
+
+  var pie = d3.pie()
+    .value(function(d) { return d.count; })
+    .sort(null);
+
+  var arcs = svg.selectAll("path")
+    .data(pie(dataset))
+    .enter()
+    .append("path")
+    .attr("d", arc)
+    .attr("fill", function(d) {
+      return d.data.color;
+    });
+
+  // legend
+  var legend = svg.selectAll(".legend")
+    .data(dataset)
+    .enter()
+    .append("g")
+    .attr("class", "legend")
+    .attr("transform", function(d, i)  {
+      var x = i * (legendRectSize + legendSpacing + legendTextWidth) - (svgWidth / 2);
+      var y = legendPadding + pieHeight / 2;
+      return "translate(" + x + "," + y + ")";
+    });
+
+  legend.append("rect")
+    .attr("width", legendRectSize)
+    .attr("height", legendRectSize)
+    .style("fill", function(d) { return d.color; });
+
+  legend.append("text")
+    .attr("x", legendRectSize + 2 * legendSpacing)
+    .attr("y", legendRectSize - legendSpacing)
+    .attr("fill", "#555555")
+    .text(function(d) { return d.label; });
+
+  var tooltip = d3.select("#notLossesChart")
+    .append("div")
+    .attr("class", "chartTooltip");
+
+  tooltip.append("div").attr("class", "tooltipLabel");
+  tooltip.append("div").attr("class", "tooltipCount");
+  tooltip.append("div").attr("class", "tooltipPercent");
+  tooltip.style("display", "none");
+
+  arcs.on("mouseover", function(d) {
+    // don't show tooltip for the sample data
+    if (selectedPlayerId) {
+      var total = Object.keys(model.players[selectedPlayerId].gameResults).length;
+      var percent = Math.round(1000 * d.data.count / total) / 10;
+      tooltip.select(".tooltipLabel").html(d.data.label);
+      tooltip.select(".tooltipCount").html(d.data.count);
+      tooltip.select(".tooltipPercent").html(percent + "%");
+      tooltip.style("display", "block");
+    }
+  });
+  arcs.on("mouseout", function(d) {
+    tooltip.style("display", "none");
+  })
+  arcs.on("mousemove", function(d) {
+    tooltip
+      .style("left", (d3.event.clientX + 10) + "px")
+      .style("top", (d3.event.clientY + 10) + "px");
+  });
+};
+
+var renderNotLossSection = function() {
+  // to prevent hard-coding these #s
+  const pieWidth = 300;
+  const pieHeight = 300;
+  const outerRadius = Math.min(pieWidth, pieHeight) / 2;
+  const innerRadius = outerRadius / 2;
+
+  const legendRectSize = 20;
+  const legendSpacing = 4;
+  const legendTextWidth = 64;
+  const legendPadding = 20;
+
+  const svgHeight = pieHeight + legendPadding + legendRectSize;
+  const svgWidth = pieWidth;
+
+  const defaultDataset = [
+    { label: "Losses", color: "#eeeeee", count: 1 },
+    { label: "Not losses", color: "#cccccc", count: 5}
+  ];
+
+  var dataset = defaultDataset;
+  if (selectedPlayerId) {
+    var playerAnalysis = model.stats.playerAnalyses[selectedPlayerId];
+    var notLossCount = playerAnalysis.notLossCounts[selectedPlayerCount];
+    var lossCount = playerAnalysis.gameCounts[selectedPlayerCount] - notLossCount;
+    dataset = [
+      { label: "Losses", color: "#ffcc00", count: lossCount },
+      { label: "Not losses", color: "#00cccc", count: notLossCount }
+    ];
+  }
+
+  var svg = d3.select("#notLossesChart");
+
+  // pie
+  var arc = d3.arc()
+    .innerRadius(innerRadius)
+    .outerRadius(outerRadius);
+
+  var pie = d3.pie()
+    .value(function(d) { return d.count; })
+    .sort(null);
+
+  var arcs = svg.selectAll("path")
+    .data(pie(dataset));
+
+  const transitionMs = 500;
+  arcs
+    .transition()
+    .delay(function(d, i) { return i * transitionMs; })
+    .duration(transitionMs)
+    .attrTween("d", function(d) {
+      var i = d3.interpolate(d.startAngle + 0.1, d.endAngle);
+      return function(t) {
+        d.endAngle = i(t);
+        return arc(d);
+      }
+    })
+    .attr("fill", function(d) {
+      return d.data.color;
+    });
+
+  // legend
+  var legend = svg.selectAll(".legend")
+    .data(dataset);
+
+  legend.append("rect")
+    .attr("width", legendRectSize)
+    .attr("height", legendRectSize)
+    .style("fill", function(d) { return d.color; });
 };
 
 var rankPlayerIds = function(scores, stat) {

@@ -266,7 +266,7 @@ var addGame = function(connection) {
           });
           rl.question("  Enter number of players: ", function(numPlayersString) {
             rl.close();
-            var playerCount = Number(numPlayersString);
+            var playerCount = parseInt(numPlayersString);
             if (isNaN(playerCount)) {
               console.error("  Unable to add game; NaN number of players was entered");
               prompt(connection);
@@ -385,8 +385,8 @@ var parseDateInput = function(dateInput) {
   }
   var dateInputSplit = dateInput.split("/");
   if (dateInputSplit.length === 2 || dateInputSplit.length === 3) {
-    var month = Number(dateInputSplit[0]);
-    var day = Number(dateInputSplit[1]);
+    var month = parseInt(dateInputSplit[0]);
+    var day = parseInt(dateInputSplit[1]);
     var year = dateInputSplit.length === 3 ? dateNumber(dateInputSplit[2]) : new Date().getFullYear();
     if (isNaN(month) || isNaN(day) || isNaN(year)) {
       console.error("  Unable to add game; date contained non-numbers");

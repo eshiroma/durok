@@ -38,6 +38,7 @@ h1, h2, h3 {
 }
 
 section {
+  clear: both;
   padding: 20px;
 }
 
@@ -175,3 +176,33 @@ li .filterCategory {
   margin: auto;
 }
 
+.playerSelectWrapper {
+  float: right;
+  margin-top: 16px;
+}
+.playerSelectWrapper .label { font-size: 20px; }
+.playerSelectWrapper select,
+.playerSelectWrapper option { font-size: 16px; }
+
+#notLossesChart,
+#notLossesPlayerCount {
+  float: left
+}
+#notLossesPlayerCount {
+  margin-left: 80px;
+}
+#notLossesPlayerCount input {
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+.chartTooltip {
+  background-color: #fff;
+  position: fixed;
+  width: 160px;
+  padding: 16px;
+  box-shadow: 0px 4px 8px -4px rgba(0, 0, 0, 0.3);
+}
+.chartTooltip .tooltipLabel {
+  font-weight: bold;
+}

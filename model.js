@@ -169,7 +169,8 @@ function Model() {
     var result = {};
     for (var playerId in players) {
       var playerInfo = this.getPlayerInfo(playerId, domainId, startDate, endDate);
-      if (playerInfo) {
+      // only include players that have played at least one relevant game
+      if (playerInfo && Object.keys(playerInfo.gameResults).length > 0) {
         result[playerId] = playerInfo;
       }
     }
@@ -317,9 +318,16 @@ function Model() {
     return result;
   };
 
+  var getExpectedLosses = function(playerId, gameIds) {
+    return gameIds.reduce(function(total, gameId) {
+      return (1 / games[gameId].players.length) + total;
+    }, 0);
+  };
+
   // {
   //    notLossCounts: playerCount -> notLossCount, (0 for total)
   //    gameCounts: playerCount -> gameCount, (0 for total)
+  //    expectedLosses: (1/# of players) per game,
   //    timeSeriesGames: [gameId],
   //    timeSeriesByGame: stat -> [cumulativeStatValueForGame]
   //    timeSeriesDates: [date],
@@ -334,20 +342,30 @@ function Model() {
 
     var notLossCounts = getNotLossCounts(playerId, timeSeriesGames);
     var gameCounts = getGameCounts(playerId, timeSeriesGames);
+    var expectedLosses = getExpectedLosses(playerId, timeSeriesGames);
 
-    console.log(notLossCounts);
-    console.log(gameCounts);
+    return { notLossCounts: notLossCounts, gameCounts: gameCounts };
   };
 
   // {
-  //    playerId -> { playerAnalysis },
+  //    playerAnalyses: playerId -> { playerAnalysis },
   //    timeSeriesGames: [gameId],
   //    timeSeriesByGameAverages: stat -> [cumulativeStatValueForGame]
   //    timeSeriesDates: [date],
-  //    timeSerieByDateAverages: stat -> [cumulativeStatValueForDate]
+  //    timeSeriesByDateAverages: stat -> [cumulativeStatValueForDate]
   // }
-  this.getAllPlayersAnalysis = function(domainId, startDate, endDate) {
+  this.getAllPlayerAnalyses = function(domainId, startDate, endDate) {
+    var playerInfos = this.getAllPlayerInfo(domainId, startDate, endDate);
 
+    var playerAnalyses = {};
+    Object.keys(playerInfos).forEach(function(playerId) {
+      playerId = parseInt(playerId)
+      playerAnalyses[playerId] = this.getPlayerAnalysis(playerId, domainId, startDate, endDate);
+    }.bind(this));
+
+    return {
+      playerAnalyses: playerAnalyses
+    };
   };
 };
 
