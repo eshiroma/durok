@@ -195,3 +195,14 @@ li .filterCategory {
   vertical-align: middle;
   margin-right: 8px;
 }
+
+.chartTooltip {
+  background-color: #fff;
+  position: fixed;
+  width: 160px;
+  padding: 16px;
+  box-shadow: 0px 4px 8px -4px rgba(0, 0, 0, 0.3);
+}
+.chartTooltip .tooltipLabel {
+  font-weight: bold;
+}

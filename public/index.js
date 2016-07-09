@@ -351,6 +351,35 @@ var initializeNotLossSection = function() {
     .attr("y", legendRectSize - legendSpacing)
     .attr("fill", "#555555")
     .text(function(d) { return d.label; });
+
+  var tooltip = d3.select("#notLossesChart")
+    .append("div")
+    .attr("class", "chartTooltip");
+
+  tooltip.append("div").attr("class", "tooltipLabel");
+  tooltip.append("div").attr("class", "tooltipCount");
+  tooltip.append("div").attr("class", "tooltipPercent");
+  tooltip.style("display", "none");
+
+  arcs.on("mouseover", function(d) {
+    // don't show tooltip for the sample data
+    if (selectedPlayerId) {
+      var total = Object.keys(model.players[selectedPlayerId].gameResults).length;
+      var percent = Math.round(1000 * d.data.count / total) / 10;
+      tooltip.select(".tooltipLabel").html(d.data.label);
+      tooltip.select(".tooltipCount").html(d.data.count);
+      tooltip.select(".tooltipPercent").html(percent + "%");
+      tooltip.style("display", "block");
+    }
+  });
+  arcs.on("mouseout", function(d) {
+    tooltip.style("display", "none");
+  })
+  arcs.on("mousemove", function(d) {
+    tooltip
+      .style("left", (d3.event.clientX + 10) + "px")
+      .style("top", (d3.event.clientY + 10) + "px");
+  });
 };
 
 var renderNotLossSection = function() {
