@@ -124,9 +124,8 @@ var filterData = function() {
   var filters = document.getElementById("gameFilters");
   var domainId = filters.domainSelect.options[filters.domainSelect.selectedIndex].value;
 
-  // TODO: handle time zone issues (we're spanning different dates here...)
-  var startDate = filters.startDate.value ? new Date(filters.startDate.value) : new Date(0);
-  var endDate = filters.endDate.value ? new Date(filters.endDate.value) : new Date();
+  var startDate = filters.startDate.value ? dateFromDropdownString(filters.startDate.value) : new Date(0);
+  var endDate = filters.endDate.value ? dateFromDropdownString(filters.endDate.value) : new Date();
 
   render(domainId, startDate.getTime(), endDate.getTime());
 };
@@ -486,6 +485,17 @@ var rankPlayerIds = function(scores, stat) {
     }
   });
 };
+
+var dateFromDropdownString = function(dateString) {
+  if (!dateString) {
+    return undefined;
+  }
+  var dateSplit = dateString.split("-");
+  var year = dateSplit[0];
+  var month = dateSplit[1] - 1;
+  var day = dateSplit[2];
+  return new Date(year, month, day);
+}
 
 var dayMonthString = function(date) {
   return (date.getMonth() + 1) + "/" + date.getDate();

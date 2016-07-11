@@ -25,7 +25,10 @@ app.get("/", function(req, res) {
 app.get("/gameData", function(req, res) {
   var domainId = req.query.domain ? Number(req.query.domain) : undefined;
   var startDate = req.query.start ? new Date(Number(req.query.start)) : new Date(0);
+  var oldStartDateDay = startDate.getDate();
+  startDate = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
   var endDate = req.query.end ? new Date(Number(req.query.end)) : new Date();
+  endDate = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
 
   var domains = model.getDomains();
   var games = model.getAllGameInfo(domainId, startDate, endDate);
