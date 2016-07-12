@@ -344,7 +344,11 @@ function Model() {
     var gameCounts = getGameCounts(playerId, timeSeriesGames);
     var expectedLosses = getExpectedLosses(playerId, timeSeriesGames);
 
-    return { notLossCounts: notLossCounts, gameCounts: gameCounts };
+    return {
+      notLossCounts: notLossCounts,
+      gameCounts: gameCounts,
+      expectedLosses: expectedLosses
+    };
   };
 
   // {

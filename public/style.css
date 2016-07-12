@@ -10,12 +10,21 @@ body {
 
 .banner {
   color: #fff;
-  background-color: #888;
+  background-size: 100%;
+  background-color: #1f0601;
   background-attachment: fixed;
-  background-image: url("cards.jpg");
+  background-image: url("cards-fixed-width.jpg");
+  background-repeat: no-repeat;
   height: 300px;
   margin: 0;
   text-align: center;
+}
+@media(max-width: 768px) {
+  .banner {
+    background-size: 750px;
+    background-image: url("cards-narrow.jpg");
+    background-attachment: scroll;
+  }
 }
 
 .banner h1 {
@@ -185,12 +194,14 @@ li .filterCategory {
 .playerSelectWrapper option { font-size: 16px; }
 
 #notLossesChart,
-#notLossesPlayerCount {
+.notLossesParams {
   float: left
 }
-#notLossesPlayerCount {
+.notLossesParams {
   margin-left: 80px;
 }
+.notLossesParams .label { font-size: 16px; }
+
 #notLossesPlayerCount input {
   vertical-align: middle;
   margin-right: 8px;

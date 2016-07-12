@@ -64,7 +64,13 @@ body
         div(id="notLossRatio")
           h2 Not loss ratio
           div(id="notLossesChart")
-          div(id="notLossesPlayerCount")
+          div(class="notLossesParams")
+            div(id="notLossesComparisonPlayerWrapper")
+              span(class="label") Compare to
+              select(id="notLossesComparisonPlayerSelect", name="comparisonPlayerId")
+                option(value="none") None
+                option(value="expected") Expected rate (random)
+            div(id="notLossesPlayerCount")
 
 
   section(id="rules")
