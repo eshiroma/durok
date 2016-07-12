@@ -392,7 +392,8 @@ var parseDateInput = function(dateInput) {
       console.error("  Unable to add game; date contained non-numbers");
       return;
     } else {
-      return sqlDateStringFromDate(new Date(year, month, day));
+      console.log(new Date(year, month - 1, day));
+      return sqlDateStringFromDate(new Date(year, month - 1, day));
     }
   } else {
     console.error("  Unable to add game; incorrecty formatted date");
