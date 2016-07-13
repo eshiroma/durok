@@ -19,7 +19,7 @@ body {
   margin: 0;
   text-align: center;
 }
-@media(max-width: 768px) {
+@media(max-width: 767px) {
   .banner {
     background-size: 750px;
     background-image: url("cards-narrow.jpg");
@@ -193,25 +193,49 @@ li .filterCategory {
 .playerSelectWrapper select,
 .playerSelectWrapper option { font-size: 16px; }
 
-#notLossesChart,
-#notLossesPlayerCount {
-  float: left
+
+#notLossRatio { position: relative; }
+.notLossesParams {
+  position: absolute;
+  top: 40px;
+  right: 64px;
 }
-#notLossesPlayerCount {
-  margin-left: 80px;
-}
+
+.notLossesParams .label { font-size: 16px; }
+
 #notLossesPlayerCount input {
   vertical-align: middle;
   margin-right: 8px;
 }
+#notLossesChartLegend { overflow: auto; }
 
-.chartTooltip {
+.legendItem,
+.legendItem .legendSquare {
+  float: left;
+  margin-right: 16px;
+  vertical-align: middle;
+}
+.legendItem .legendSquare {
+  height: 16px;
+  width: 16px;
+  margin-right: 8px;
+}
+
+.pieChartTooltip {
   background-color: #fff;
   position: fixed;
-  width: 160px;
+  min-width: 100px;
   padding: 16px;
-  box-shadow: 0px 4px 8px -4px rgba(0, 0, 0, 0.3);
+  box-shadow: 0px 4px 16px -4px rgba(0, 0, 0, 0.5);
 }
-.chartTooltip .tooltipLabel {
+.pieChartTooltip .tooltipLabel,
+.pieChartTooltip .performance {
   font-weight: bold;
+}
+.pieChartTooltip .comparison .percent {
+  float: right;
+}
+.pieChartTooltip .comparison .name {
+  float: left;
+  margin-right: 32px;
 }

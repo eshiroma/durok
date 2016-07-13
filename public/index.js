@@ -1,3 +1,18 @@
+/*
+DESIGN CHOICES:
+Not Losses Analysis
+  Data precedence:  selected player  ->  comparison player  ->  player count
+
+  always show radio buttons for ALL #s of players for the selected player,
+    but disable buttons for which the selected comparison player doesn't have data
+    (clicking a button will never put data into invalid state)
+  always show all possible comparison players in dropdown
+    but switch to player count "any" if the newly selected player has no data
+    for the currently selected player count
+    (selecting comparison player from dropdown may naturally put data into invalid state,
+     hence manually updating player count)
+*/
+
 $(document).ready(function() {
   initializeFilters();
   initializeTooltips();
@@ -12,13 +27,32 @@ $(document).ready(function() {
   // set up player stats
   initializeNotLossSection();
   $("#playerSelect").change(function() {
+    selectedPlayerCount = 0;
+    selectedNotLossComparisonPlayerId = "none";
     renderPlayerSelect();
     renderPlayerCountOptions();
+    renderNotLossComparisonPlayerSelect();
     renderNotLossSection();
   });
+
   $("#notLossesPlayerCount").change(function() {
-    // save the selected player count and update chart
+    // The radio button html is already updated - update internal selectedPlayerCount
     selectedPlayerCount = $('input[name=playerCount]:checked').val();
+    renderNotLossSection();
+  });
+
+  $("#notLossesComparisonPlayerWrapper").change(function() {
+    // The player select html is already updated - update internal selectedNotLossComparisonPlayerId
+    var comparisonPlayerSelect = document.getElementById("notLossesComparisonPlayerSelect");
+    selectedNotLossComparisonPlayerId = comparisonPlayerSelect.options[comparisonPlayerSelect.selectedIndex].value;
+    // If newly selected player has no data for the selected player count, switch to "any" (0)
+    selectedPlayerCount = $('input[name=playerCount]:checked').val();
+    if (selectedNotLossComparisonPlayerId !== "none" &&
+        selectedNotLossComparisonPlayerId !== "random" &&
+        !model.stats.playerAnalyses[selectedNotLossComparisonPlayerId].gameCounts[selectedPlayerCount]) {
+      selectedPlayerCount = 0;
+    }
+    renderPlayerCountOptions();
     renderNotLossSection();
   });
 
@@ -34,6 +68,7 @@ var isDescending = true;
 
 var selectedPlayerId;
 var selectedPlayerCount = 0;
+var selectedNotLossComparisonPlayerId = "none";
 
 const STAT_INFO = {
   "rank": { defaultIsDescending: false },
@@ -49,6 +84,7 @@ const STAT_INFO = {
 
 const TOOLTIP_TRANSITION_MS = 250;
 
+// Render the page with a new domain or date range
 var render = function(domainId, startDate, endDate) {
   var params = {
     domain: domainId,
@@ -63,8 +99,11 @@ var render = function(domainId, startDate, endDate) {
 
     // we don't know what players there are, so just reset selected player/count
     document.getElementById("playerSelect").selectedIndex = 0;
+    selectedPlayerCount = 0;
+    selectedNotLossComparisonPlayerId = "none";
     renderPlayerSelect();
     renderPlayerCountOptions();
+    renderNotLossComparisonPlayerSelect();
     renderNotLossSection();
     
     if (Object.keys(model.games).length > 0) {
@@ -258,30 +297,206 @@ var renderPlayerSelect = function() {
   // first clear out existing dropdown
   $("#playerSelect").html('<option value="0">Select a player</option>');
   var playerSelect = document.getElementById("playerSelect");
-  Object.keys(model.players).forEach(function(playerId, i) {
+  Object.keys(model.players).sort(function(playerId, otherId) {
+    return model.players[playerId].name.localeCompare(model.players[otherId].name);
+  }).forEach(function(playerId, i) {
     playerSelect.options[i + 1] = new Option(model.players[playerId].name, playerId,
       false, selectedPlayerId == playerId);
   });
 };
 
+// Uses the current value of selectedPlayerCount
 var renderPlayerCountOptions = function() {
-  selectedPlayerCount = 0;
-  var optionsRadioHtml = '<h3>Number of players</span></h3>'
-  + '<input type="radio", name="playerCount" value="0" checked>Any<br>';
+  var optionsRadioHtml = '<h4>Number of players</h4>'
+  + '<input type="radio", name="playerCount" value="0"';
+  if (selectedPlayerCount == 0) {
+    optionsRadioHtml +=' checked>Any<br>';
+  } else {
+    optionsRadioHtml += '>Any<br>';
+  }
 
   if (selectedPlayerId) {
     var playerGameCounts = model.stats.playerAnalyses[selectedPlayerId].gameCounts;
     Object.keys(playerGameCounts).forEach(function(playerCount, i) {
       if (playerCount != 0) {
         optionsRadioHtml += '<input type="radio", name="playerCount" value="'
-          + playerCount + '">' + playerCount + '<br>';
+          + playerCount + '"';
+        if (selectedPlayerCount == playerCount) {
+          optionsRadioHtml += '  checked';
+        } else if (selectedNotLossComparisonPlayerId != "none" && selectedNotLossComparisonPlayerId != "random" &&
+            !model.stats.playerAnalyses[selectedNotLossComparisonPlayerId].gameCounts[playerCount]) {
+          // grey out the option because the other player doesn't have data for this player count
+          optionsRadioHtml += '  disabled';
+        }
+        optionsRadioHtml += '>' + playerCount + '<br>';
       }
     });
   }
   $("#notLossesPlayerCount").html(optionsRadioHtml);
 };
 
+// Uses current value of selectedPlayerId and selectedNotLossComparisonPlayerId
+var renderNotLossComparisonPlayerSelect = function() {
+  var selectHtml = '<option value="none">None</option>'
+  + '<option value="random">Random rate</option>';
+  
+  if (selectedPlayerId) {
+    // only include players with data for the selected # of games
+    Object.keys(model.players).forEach(function(otherPlayerId, i) {
+      var numberOfGamesForPlayerCount = model.stats.playerAnalyses[otherPlayerId].gameCounts[selectedPlayerCount];
+      if (otherPlayerId != selectedPlayerId && numberOfGamesForPlayerCount) {
+        var playerName = model.players[otherPlayerId].name;
+        selectHtml += '<option value="' + otherPlayerId + '">' + playerName + '</option>';
+      }
+    });
+  }
+  $("#notLossesComparisonPlayerSelect").html(selectHtml);
+
+  var selectedIndex = 0;
+  var comparisonPlayerSelect = document.getElementById("notLossesComparisonPlayerSelect");
+  for (i = 0; i < comparisonPlayerSelect.options.length; i++) {
+    if (selectedNotLossComparisonPlayerId == comparisonPlayerSelect.options[i]) {
+      selectedIndex = i;
+    }
+  }
+  comparisonPlayerSelect.selectedIndex = selectedIndex;
+};
+
+
+const pieWidth = 360;
+const pieHeight = 360;
+const outerRadius = Math.min(pieWidth, pieHeight) / 2;
+const innerRadius = outerRadius / 2;
+const verticalPadding = 32;
+
+const svgHeight = pieHeight + verticalPadding;
+const svgWidth = pieWidth;
+
+const pie = d3.pie()
+  .value(function(d) { return d.value; })
+  .sort(null);
+
+const arc = d3.arc()
+  .innerRadius(innerRadius)
+  .outerRadius(outerRadius);
+
+var getNotLossChartDataset = function(losses, notLosses, delta) {
+  var result = [
+    { label: "Losses", color: "#dddddd", value: 2, legendString: "Losses" },
+    { label: "Rate delta", color: "#bbbbbb", value: 0, legendString: "Rate delta" },
+    { label: "Not losses", color: "#999999", value: 10, legendString: "Not losses" }
+  ];
+  if (losses || notLosses) { // one (but not both) may be zero
+    result[0].value = losses;
+    result[0].color = "#ffcc00";
+
+    result[2].value = notLosses;
+    result[2].color = "#00cccc";
+    result[1].color = "#00cccc";
+
+    if (delta) {
+      result[1].value = Math.abs(delta);
+      result[1].signedDelta = delta;
+      result[1].color = delta >= 0 ? "#aadd88" : "#cc4444";
+    }
+  } else if (delta) {
+    result[0].value = 2;
+    result[1].value = 1;
+    result[2].value = 7;
+  }
+  if (delta) {
+    result[0].legendString = "Shared losses";
+    result[2].legendString = "Shared not losses";
+  }
+  return result;
+};
+
 var initializeNotLossSection = function() {
+  var dataset = getNotLossChartDataset();
+
+  var svg = d3.select("#notLossesChart")
+    .append("svg")
+    .attr("width", svgWidth)
+    .attr("height", svgHeight)
+    .append("g")
+    .attr("transform", "translate(" + (svgWidth / 2) + "," + (-4 + svgHeight / 2) + ")");
+
+  var arcs = svg.selectAll("path")
+    .data(pie(dataset))
+    .enter()
+    .append("path")
+    .attr("d", arc)
+    .attr("fill", function(d) {
+      return d.data.color;
+    });
+
+  // legend: show and color "Losses" and "Not losses"; hide delta
+  var $legend = $(".notLossesChartLegend");
+  $(".legendItem", $legend).show();
+  $(".legendItem.losses .legendSquare", $legend)
+    .css("background-color", dataset[0].color);
+  $(".legendItem.losses .legendLabel", $legend)
+    .html(dataset[0].legendString);
+  $(".legendItem.notLosses .legendSquare", $legend)
+    .css("background-color", dataset[2].color);
+  $(".legendItem.notLosses .legendLabel", $legend)
+    .html(dataset[2].legendString);
+
+  $(".legendItem.delta", $legend).hide();
+
+
+  var $tooltip = $(".pieChartTooltip");
+  $tooltip.hide();
+
+  arcs.on("mouseover", function(d) {
+    // don't show tooltip for the sample data
+    $(".tooltipSection", $tooltip).hide();
+    if (selectedPlayerId) {
+      if (selectedNotLossComparisonPlayerId === "none") {
+        // show counts + % for non-comparison data
+        var total = Object.keys(model.players[selectedPlayerId].gameResults).length;
+        var percent = Math.round(1000 * d.data.value / total) / 10;
+        $(".tooltipLabel", $tooltip).html(d.data.label);
+        $(".tooltipCount", $tooltip).html(d.data.value + (d.data.value == 1 ? " game" : " games"));
+        $(".tooltipPercent", $tooltip).html(percent + "%");
+        $(".noComparison", $tooltip).show();
+
+      } else  {
+        var playerName = model.players[selectedPlayerId].name;
+        var comparisonName = selectedNotLossComparisonPlayerId == "random" ? 
+          "random" : model.players[selectedNotLossComparisonPlayerId].name;
+
+        if (d.data.label === "Losses" || d.data.label === "Not losses") {
+          // show %s for both players
+          $(".tooltipLabel", $tooltip).html(d.data.label);
+          $(".playerRow .name", $tooltip).html(playerName);
+          $(".playerRow .percent", $tooltip).html(d.data.playerPercent + "%");
+          $(".comparisonRow .name", $tooltip).html(comparisonName);
+          $(".comparisonRow .percent", $tooltip).html(d.data.comparisonPercent + "%");
+          $(".comparison", $tooltip).show();
+
+        } else {
+          var performance = d.data.signedDelta >= 0 ? "outperforms" : "underperforms";
+          var tooltipText = playerName + ' <span class="performance">' + performance + '</span><br/>'
+              + comparisonName + ' by <span class="performance">' + d.data.value + '%</span>';
+          $(".tooltipText", $tooltip).html(tooltipText);
+          $(".delta", $tooltip).show();        
+        }
+      }
+      $tooltip.show();
+    }
+  });
+  arcs.on("mouseout", function(d) {
+    $tooltip.hide();
+  })
+  arcs.on("mousemove", function(d) {
+    $tooltip
+      .css("left", (d3.event.clientX + 10) + "px")
+      .css("top", (d3.event.clientY + 10) + "px");
+  });
+};
+
+var renderNotLossSection = function() {
   // to prevent hard-coding these #s
   const pieWidth = 350;
   const pieHeight = 350;
@@ -293,136 +508,55 @@ var initializeNotLossSection = function() {
   const legendTextWidth = 64;
   const legendPadding = 20;
 
-  const svgHeight = pieHeight + legendPadding + legendRectSize;
+  const svgHeight = pieHeight; // + legendPadding
   const svgWidth = pieWidth;
 
-  const defaultDataset = [
-    { label: "Losses", color: "#eeeeee", count: 1 },
-    { label: "Not losses", color: "#cccccc", count: 5}
-  ];
-
-  var dataset = defaultDataset;
-
-  var svg = d3.select("#notLossesChart")
-    .append("svg")
-    .attr("width", svgWidth)
-    .attr("height", svgHeight + 50)
-    .append("g")
-    .attr("transform", "translate(" + (svgWidth / 2) + "," + (svgHeight / 2) + ")");
-
-  // pie
-  var arc = d3.arc()
-    .innerRadius(innerRadius)
-    .outerRadius(outerRadius);
-
-  var pie = d3.pie()
-    .value(function(d) { return d.count; })
-    .sort(null);
-
-  var arcs = svg.selectAll("path")
-    .data(pie(dataset))
-    .enter()
-    .append("path")
-    .attr("d", arc)
-    .attr("fill", function(d) {
-      return d.data.color;
-    });
-
-  // legend
-  var legend = svg.selectAll(".legend")
-    .data(dataset)
-    .enter()
-    .append("g")
-    .attr("class", "legend")
-    .attr("transform", function(d, i)  {
-      var x = i * (legendRectSize + legendSpacing + legendTextWidth) - (svgWidth / 2);
-      var y = legendPadding + pieHeight / 2;
-      return "translate(" + x + "," + y + ")";
-    });
-
-  legend.append("rect")
-    .attr("width", legendRectSize)
-    .attr("height", legendRectSize)
-    .style("fill", function(d) { return d.color; });
-
-  legend.append("text")
-    .attr("x", legendRectSize + 2 * legendSpacing)
-    .attr("y", legendRectSize - legendSpacing)
-    .attr("fill", "#555555")
-    .text(function(d) { return d.label; });
-
-  var tooltip = d3.select("#notLossesChart")
-    .append("div")
-    .attr("class", "chartTooltip");
-
-  tooltip.append("div").attr("class", "tooltipLabel");
-  tooltip.append("div").attr("class", "tooltipCount");
-  tooltip.append("div").attr("class", "tooltipPercent");
-  tooltip.style("display", "none");
-
-  arcs.on("mouseover", function(d) {
-    // don't show tooltip for the sample data
-    if (selectedPlayerId) {
-      var total = Object.keys(model.players[selectedPlayerId].gameResults).length;
-      var percent = Math.round(1000 * d.data.count / total) / 10;
-      tooltip.select(".tooltipLabel").html(d.data.label);
-      tooltip.select(".tooltipCount").html(d.data.count);
-      tooltip.select(".tooltipPercent").html(percent + "%");
-      tooltip.style("display", "block");
-    }
-  });
-  arcs.on("mouseout", function(d) {
-    tooltip.style("display", "none");
-  })
-  arcs.on("mousemove", function(d) {
-    tooltip
-      .style("left", (d3.event.clientX + 10) + "px")
-      .style("top", (d3.event.clientY + 10) + "px");
-  });
-};
-
-var renderNotLossSection = function() {
-  // to prevent hard-coding these #s
-  const pieWidth = 300;
-  const pieHeight = 300;
-  const outerRadius = Math.min(pieWidth, pieHeight) / 2;
-  const innerRadius = outerRadius / 2;
-
-  const legendRectSize = 20;
-  const legendSpacing = 4;
-  const legendTextWidth = 64;
-  const legendPadding = 20;
-
-  const svgHeight = pieHeight + legendPadding + legendRectSize;
-  const svgWidth = pieWidth;
-
-  const defaultDataset = [
-    { label: "Losses", color: "#eeeeee", count: 1 },
-    { label: "Not losses", color: "#cccccc", count: 5}
-  ];
-
-  var dataset = defaultDataset;
+  var dataset = getNotLossChartDataset();
   if (selectedPlayerId) {
     var playerAnalysis = model.stats.playerAnalyses[selectedPlayerId];
     var notLossCount = playerAnalysis.notLossCounts[selectedPlayerCount];
     var lossCount = playerAnalysis.gameCounts[selectedPlayerCount] - notLossCount;
-    dataset = [
-      { label: "Losses", color: "#ffcc00", count: lossCount },
-      { label: "Not losses", color: "#00cccc", count: notLossCount }
-    ];
+
+    if (selectedNotLossComparisonPlayerId === "none") {
+      dataset = getNotLossChartDataset(lossCount, notLossCount);
+    } else {
+      var lossRate = lossCount / (lossCount + notLossCount);
+      var notLossRate = 1 - lossRate;
+      var comparisonLossRate;
+      var comparisonNotLossRate;
+      if (selectedNotLossComparisonPlayerId === "random") {
+        var comparisonRandomLossRate = playerAnalysis.expectedLosses / playerAnalysis.gameCounts[selectedPlayerCount];
+        comparisonLossRate = selectedPlayerCount == 0 ? comparisonRandomLossRate : 1 / selectedPlayerCount;
+        comparisonNotLossRate = 1 - comparisonLossRate;
+      } else {
+        var otherPlayerAnalysis = model.stats.playerAnalyses[selectedNotLossComparisonPlayerId];
+        var otherNotLossCount = otherPlayerAnalysis.notLossCounts[selectedPlayerCount];
+        var otherTotalGames = otherPlayerAnalysis.gameCounts[selectedPlayerCount];
+        comparisonNotLossRate = otherNotLossCount / otherTotalGames;
+        comparisonLossRate = 1 - comparisonNotLossRate;
+      }
+
+      var sharedLosses = Math.min(lossRate, comparisonLossRate);
+      var sharedNotLosses = Math.min(notLossRate, comparisonNotLossRate);
+      var rateDelta = notLossRate - comparisonNotLossRate;
+
+      sharedLosses = Math.round(1000 * sharedLosses) / 10;
+      sharedNotLosses = Math.round(1000 * sharedNotLosses) / 10;
+      rateDelta = Math.round(1000 * rateDelta) / 10;
+
+      dataset = getNotLossChartDataset(sharedLosses, sharedNotLosses, rateDelta);
+      dataset[0].playerPercent = Math.round(1000 * lossRate) / 10;
+      dataset[0].comparisonPercent = Math.round(1000 * comparisonLossRate) / 10;
+      dataset[2].playerPercent = Math.round(1000 * notLossRate) / 10;
+      dataset[2].comparisonPercent = Math.round(1000 * comparisonNotLossRate) / 10;
+    }
+  } else if (selectedNotLossComparisonPlayerId !== "none") {
+    dataset = getNotLossChartDataset(undefined, undefined, true);
   }
 
   var svg = d3.select("#notLossesChart");
 
   // pie
-  var arc = d3.arc()
-    .innerRadius(innerRadius)
-    .outerRadius(outerRadius);
-
-  var pie = d3.pie()
-    .value(function(d) { return d.count; })
-    .sort(null);
-
   var arcs = svg.selectAll("path")
     .data(pie(dataset));
 
@@ -443,13 +577,24 @@ var renderNotLossSection = function() {
     });
 
   // legend
-  var legend = svg.selectAll(".legend")
-    .data(dataset);
+  var $legend = $(".notLossesChartLegend");
+  $(".legendItem", $legend).show();
+  $(".legendItem.losses .legendSquare", $legend)
+    .css("background-color", dataset[0].color);
+  $(".legendItem.losses .legendLabel", $legend)
+    .html(dataset[0].legendString);
+  $(".legendItem.notLosses .legendSquare", $legend)
+    .css("background-color", dataset[2].color);
+  $(".legendItem.notLosses .legendLabel", $legend)
+    .html(dataset[2].legendString);
 
-  legend.append("rect")
-    .attr("width", legendRectSize)
-    .attr("height", legendRectSize)
-    .style("fill", function(d) { return d.color; });
+  if (selectedNotLossComparisonPlayerId != "none") {
+    $(".legendItem.delta .legendSquare", $legend)
+      .css("background-color", dataset[1].color);
+    $(".legendItem.delta", $legend).show();
+  } else {
+    $(".legendItem.delta", $legend).hide();
+  }
 };
 
 var rankPlayerIds = function(scores, stat) {

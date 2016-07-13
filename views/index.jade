@@ -63,8 +63,25 @@ body
 
         div(id="notLossRatio")
           h2 Not loss ratio
-          div(id="notLossesChart")
-          div(id="notLossesPlayerCount")
+          div(class="notLossesChartWrapper")
+            div(id="notLossesChart")
+            div(class="notLossesChartLegend")
+              div(class="legendItem losses")
+                div(class="legendSquare")
+                span(class="legendLabel") Losses
+              div(class="legendItem delta")
+                div(class="legendSquare")
+                span(class="legendLabel") Rate delta
+              div(class="legendItem notLosses")
+                div(class="legendSquare")
+                span(class="legendLabel") Not losses
+          div(class="notLossesParams")
+            div(id="notLossesComparisonPlayerWrapper")
+              span(class="notLossesPlayerSelectLabel label") Compare to
+              select(id="notLossesComparisonPlayerSelect", name="comparisonPlayerId")
+                option(value="none") None
+                option(value="expected") Random rate
+            div(id="notLossesPlayerCount")
 
 
   section(id="rules")
@@ -121,3 +138,19 @@ body
     div(id="notLossTooltip" class="tooltip") -1 point per loss <br> + (1/# of non-losers) per not loss
     div(id="playScoreTooltip" class="tooltip") -1 point per loss <br> + (1/# of players) per game
     div(id="totalTooltip" class="tooltip") Not loss score for the day:<br>-1 point per loss <br> + (1/# of non-losers) per not loss
+
+    div(class="pieChartTooltip")
+      div(class="tooltipSection noComparison")
+        div(class="tooltipLabel")
+        div(class="tooltipCount")
+        div(class="tooltipPercent")
+      div(class="tooltipSection comparison")
+        div(class="tooltipLabel")
+        div(class="playerRow row")
+          div(class="name")
+          div(class="percent")
+        div(class="comparisonRow row")
+          div(class="name")
+          div(class="percent")
+      div(class="tooltipSection delta")
+        div(class="tooltipText")
