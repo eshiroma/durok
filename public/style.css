@@ -193,17 +193,33 @@ li .filterCategory {
 .playerSelectWrapper select,
 .playerSelectWrapper option { font-size: 16px; }
 
-#notLossesChart,
+.notLossesChartWrapper
 .notLossesParams {
-  float: left
+  float: left;
+  clear: left;
+  overflow: auto;
 }
 .notLossesParams {
-  margin-left: 80px;
+  margin-top: 64px;
 }
+
 .notLossesParams .label { font-size: 16px; }
 
 #notLossesPlayerCount input {
   vertical-align: middle;
+  margin-right: 8px;
+}
+#notLossesChartLegend { overflow: auto; }
+
+.legendItem,
+.legendItem .legendSquare {
+  float: left;
+  margin-right: 16px;
+  vertical-align: middle;
+}
+.legendItem .legendSquare {
+  height: 16px;
+  width: 16px;
   margin-right: 8px;
 }
 

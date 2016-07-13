@@ -63,10 +63,21 @@ body
 
         div(id="notLossRatio")
           h2 Not loss ratio
-          div(id="notLossesChart")
+          div(class="notLossesChartWrapper")
+            div(id="notLossesChart")
+            div(class="notLossesChartLegend")
+              div(class="legendItem losses")
+                div(class="legendSquare")
+                span(class="legendLabel") Losses
+              div(class="legendItem delta")
+                div(class="legendSquare")
+                span(class="legendLabel") Rate delta
+              div(class="legendItem notLosses")
+                div(class="legendSquare")
+                span(class="legendLabel") Not losses
           div(class="notLossesParams")
             div(id="notLossesComparisonPlayerWrapper")
-              span(class="label") Compare to
+              span(class="notLossesPlayerSelectLabel label") Compare to
               select(id="notLossesComparisonPlayerSelect", name="comparisonPlayerId")
                 option(value="none") None
                 option(value="expected") Expected rate (random)
