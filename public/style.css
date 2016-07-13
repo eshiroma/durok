@@ -186,6 +186,10 @@ li .filterCategory {
   margin: auto;
 }
 
+.analysisSection + .analysisSection {
+  margin-top: 64px;
+}
+
 .playerSelectWrapper {
   float: right;
   margin-top: 16px;
@@ -239,4 +243,26 @@ li .filterCategory {
 .pieChartTooltip .comparison .name {
   float: left;
   margin-right: 32px;
+}
+
+#comparisonChart .bar {
+  background-color: #00cccc;
+  color: #fff;
+  height: 32px;
+}
+#comparisonChart .barLabel {
+  width: 160px;
+  padding-right: 8px;
+  text-align: right;
+  line-height: 32px;
+}
+#comparisonChart .barRow {
+  position: relative;
+  clear: both;
+  padding: 4px;
+}
+#comparisonChart .barRow .bar {
+  position: absolute;
+  left: 168px;
+  top: 4px;
 }

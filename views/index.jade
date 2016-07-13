@@ -61,7 +61,7 @@ body
 
         h1 Player analysis
 
-        div(id="notLossRatio")
+        div(id="notLossRatio" class="analysisSection")
           h2 Not loss ratio
           div(class="notLossesChartWrapper")
             div(id="notLossesChart")
@@ -82,6 +82,19 @@ body
                 option(value="none") None
                 option(value="expected") Random rate
             div(id="notLossesPlayerCount")
+
+        div(id="statComparison" class="analysisSection")
+          h2 Stat comparison
+          div(class="comparisonChartWrapper")
+            select(id="comparisonStatSelect")
+              option(value="plays") Plays
+              option(value="losses") Losses
+              option(value="notLosses") Not losses
+              option(value="notLossScore" selected) Not loss score
+              option(value="playScore") Play score
+              option(value="notLossPercent") Not loss %
+            div(id="comparisonChart")
+
 
 
   section(id="rules")

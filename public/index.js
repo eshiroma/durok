@@ -105,6 +105,7 @@ var render = function(domainId, startDate, endDate) {
     renderPlayerCountOptions();
     renderNotLossComparisonPlayerSelect();
     renderNotLossSection();
+    renderStatComparisonSection();
     
     if (Object.keys(model.games).length > 0) {
       renderRankTable(model.scores);
@@ -595,6 +596,32 @@ var renderNotLossSection = function() {
   } else {
     $(".legendItem.delta", $legend).hide();
   }
+};
+
+// TODO: use comparisonChart.clientWidth
+var renderStatComparisonSection = function() {
+  var dataset = [2,4,2,1,8,9,4,6];
+
+  var chart = d3.select("#comparisonChart")
+  
+  var barRows = chart.selectAll("div")
+    .data(dataset)
+    .enter()
+    .append("div")
+    .attr("class", "barRow");
+
+  var barLabels = barRows
+    .append("div")
+    .attr("class", "barLabel")
+    .text(function(d) { return d; });
+
+  var maxBarWidth = $("#comparisonChart").width() - 168 - 16;
+  var maxValue = 9;
+  var barWidthMultiplier = maxBarWidth / maxValue;
+  var bars = barRows
+    .append("div")
+    .attr("class", "bar")
+    .style("width", function(d) { return d * barWidthMultiplier + "px"; });
 };
 
 var rankPlayerIds = function(scores, stat) {
