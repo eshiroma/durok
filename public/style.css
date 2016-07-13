@@ -85,6 +85,7 @@ input, select, option {
 }
 .filtersWrapper {
   float: right;
+  z-index: 1;
 }
 
 table {
