@@ -297,7 +297,9 @@ var renderPlayerSelect = function() {
   // first clear out existing dropdown
   $("#playerSelect").html('<option value="0">Select a player</option>');
   var playerSelect = document.getElementById("playerSelect");
-  Object.keys(model.players).forEach(function(playerId, i) {
+  Object.keys(model.players).sort(function(playerId, otherId) {
+    return model.players[playerId].name.localeCompare(model.players[otherId].name);
+  }).forEach(function(playerId, i) {
     playerSelect.options[i + 1] = new Option(model.players[playerId].name, playerId,
       false, selectedPlayerId == playerId);
   });
@@ -361,17 +363,13 @@ var renderNotLossComparisonPlayerSelect = function() {
 };
 
 
-const pieWidth = 350;
-const pieHeight = 350;
+const pieWidth = 360;
+const pieHeight = 360;
 const outerRadius = Math.min(pieWidth, pieHeight) / 2;
 const innerRadius = outerRadius / 2;
+const verticalPadding = 32;
 
-const legendRectSize = 20;
-const legendSpacing = 4;
-const legendTextWidth = 64;
-const legendPadding = 20;
-
-const svgHeight = pieHeight + legendPadding + legendRectSize;
+const svgHeight = pieHeight + verticalPadding;
 const svgWidth = pieWidth;
 
 const pie = d3.pie()
@@ -384,9 +382,9 @@ const arc = d3.arc()
 
 var getNotLossChartDataset = function(losses, notLosses, delta) {
   var result = [
-    { label: "Losses", color: "#dddddd", value: 2 },
-    { label: "Rate delta", color: "#bbbbbb", value: 0},
-    { label: "Not losses", color: "#999999", value: 10}
+    { label: "Losses", color: "#dddddd", value: 2, legendString: "Losses" },
+    { label: "Rate delta", color: "#bbbbbb", value: 0, legendString: "Rate delta" },
+    { label: "Not losses", color: "#999999", value: 10, legendString: "Not losses" }
   ];
   if (losses || notLosses) { // one (but not both) may be zero
     result[0].value = losses;
@@ -406,6 +404,10 @@ var getNotLossChartDataset = function(losses, notLosses, delta) {
     result[1].value = 1;
     result[2].value = 7;
   }
+  if (delta) {
+    result[0].legendString = "Shared losses";
+    result[2].legendString = "Shared not losses";
+  }
   return result;
 };
 
@@ -415,7 +417,7 @@ var initializeNotLossSection = function() {
   var svg = d3.select("#notLossesChart")
     .append("svg")
     .attr("width", svgWidth)
-    .attr("height", svgHeight + 50)
+    .attr("height", svgHeight)
     .append("g")
     .attr("transform", "translate(" + (svgWidth / 2) + "," + (svgHeight / 2) + ")");
 
@@ -434,11 +436,11 @@ var initializeNotLossSection = function() {
   $(".legendItem.losses .legendSquare", $legend)
     .css("background-color", dataset[0].color);
   $(".legendItem.losses .legendLabel", $legend)
-    .html(dataset[0].label);
+    .html(dataset[0].legendString);
   $(".legendItem.notLosses .legendSquare", $legend)
     .css("background-color", dataset[2].color);
   $(".legendItem.notLosses .legendLabel", $legend)
-    .html(dataset[2].label);
+    .html(dataset[2].legendString);
 
   $(".legendItem.delta", $legend).hide();
 
@@ -474,12 +476,9 @@ var initializeNotLossSection = function() {
           $(".comparison", $tooltip).show();
 
         } else {
-          if (d.data.signedDelta >= 0) {
-            tooltipText = playerName + " outperforms " + comparisonName + " by " + d.data.value + "%";
-          } else {
-            tooltipText = playerName + " underperforms " + comparisonName + " by " + d.data.value + "%";
-          }
-          // if they perform equally, the section is invisible/can't be hovered
+          var performance = d.data.signedDelta >= 0 ? "outperforms" : "underperforms";
+          var tooltipText = playerName + ' <span class="performance">' + performance + '</span><br/>'
+              + comparisonName + ' by <span class="performance">' + d.data.value + '%</span>';
           $(".tooltipText", $tooltip).html(tooltipText);
           $(".delta", $tooltip).show();        
         }
@@ -509,7 +508,7 @@ var renderNotLossSection = function() {
   const legendTextWidth = 64;
   const legendPadding = 20;
 
-  const svgHeight = pieHeight + legendPadding + legendRectSize;
+  const svgHeight = pieHeight; // + legendPadding
   const svgWidth = pieWidth;
 
   var dataset = getNotLossChartDataset();
@@ -583,17 +582,15 @@ var renderNotLossSection = function() {
   $(".legendItem.losses .legendSquare", $legend)
     .css("background-color", dataset[0].color);
   $(".legendItem.losses .legendLabel", $legend)
-    .html(dataset[0].label);
+    .html(dataset[0].legendString);
   $(".legendItem.notLosses .legendSquare", $legend)
     .css("background-color", dataset[2].color);
   $(".legendItem.notLosses .legendLabel", $legend)
-    .html(dataset[2].label);
+    .html(dataset[2].legendString);
 
   if (selectedNotLossComparisonPlayerId != "none") {
     $(".legendItem.delta .legendSquare", $legend)
       .css("background-color", dataset[1].color);
-    $(".legendItem.delta .legendLabel", $legend)
-      .html(dataset[1].label);
     $(".legendItem.delta", $legend).show();
   } else {
     $(".legendItem.delta", $legend).hide();
