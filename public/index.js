@@ -358,28 +358,58 @@ var renderNotLossComparisonPlayerSelect = function() {
   comparisonPlayerSelect.selectedIndex = selectedIndex;
 };
 
+
+const pieWidth = 350;
+const pieHeight = 350;
+const outerRadius = Math.min(pieWidth, pieHeight) / 2;
+const innerRadius = outerRadius / 2;
+
+const legendRectSize = 20;
+const legendSpacing = 4;
+const legendTextWidth = 64;
+const legendPadding = 20;
+
+const svgHeight = pieHeight + legendPadding + legendRectSize;
+const svgWidth = pieWidth;
+
+const pie = d3.pie()
+  .value(function(d) { return d.value; })
+  .sort(null);
+
+const arc = d3.arc()
+  .innerRadius(innerRadius)
+  .outerRadius(outerRadius);
+
+var getNotLossChartDataset = function(losses, notLosses, delta) {
+  var result = [
+    { label: "Losses", color: "#dddddd", value: 2 },
+    { label: "Rate delta", color: "#bbbbbb", value: 0},
+    { label: "Not losses", color: "#999999", value: 10}
+  ];
+  if (losses || notLosses) { // one (but not both) may be zero
+    result[0].value = losses;
+    result[0].color = "#ffcc00";
+
+    result[2].value = notLosses;
+    result[2].color = "#00cccc";
+    result[1].color = "#00cccc";
+
+    if (delta) {
+      result[1].value = Math.abs(delta);
+      result[1].color = delta >= 0 ? "#aadd88" : "#cc4444";
+    }
+  } else if (delta) {
+    result[0].value = 2;
+    result[1].value = 1;
+    result[2].value = 7;
+  }
+  return result;
+};
+
 var initializeNotLossSection = function() {
   // to prevent hard-coding these #s
-  const pieWidth = 350;
-  const pieHeight = 350;
-  const outerRadius = Math.min(pieWidth, pieHeight) / 2;
-  const innerRadius = outerRadius / 2;
 
-  const legendRectSize = 20;
-  const legendSpacing = 4;
-  const legendTextWidth = 64;
-  const legendPadding = 20;
-
-  const svgHeight = pieHeight + legendPadding + legendRectSize;
-  const svgWidth = pieWidth;
-
-  const defaultDataset = [
-    { label: "Losses", color: "#eeeeee", count: 1 },
-    { label: "Rate delta", color: "#666666", count: 0},
-    { label: "Not losses", color: "#cccccc", count: 5}
-  ];
-
-  var dataset = defaultDataset;
+  var dataset = getNotLossChartDataset();
 
   var svg = d3.select("#notLossesChart")
     .append("svg")
@@ -387,15 +417,6 @@ var initializeNotLossSection = function() {
     .attr("height", svgHeight + 50)
     .append("g")
     .attr("transform", "translate(" + (svgWidth / 2) + "," + (svgHeight / 2) + ")");
-
-  // pie
-  var arc = d3.arc()
-    .innerRadius(innerRadius)
-    .outerRadius(outerRadius);
-
-  var pie = d3.pie()
-    .value(function(d) { return d.count; })
-    .sort(null);
 
   var arcs = svg.selectAll("path")
     .data(pie(dataset))
@@ -410,13 +431,13 @@ var initializeNotLossSection = function() {
   var $legend = $(".notLossesChartLegend");
   $(".legendItem", $legend).show();
   $(".legendItem.losses .legendSquare", $legend)
-    .css("background-color", defaultDataset[0].color);
+    .css("background-color", dataset[0].color);
   $(".legendItem.losses .legendLabel", $legend)
-    .html(defaultDataset[0].label);
+    .html(dataset[0].label);
   $(".legendItem.notLosses .legendSquare", $legend)
-    .css("background-color", defaultDataset[2].color);
+    .css("background-color", dataset[2].color);
   $(".legendItem.notLosses .legendLabel", $legend)
-    .html(defaultDataset[2].label);
+    .html(dataset[2].label);
 
   $(".legendItem.delta", $legend).hide();
 
@@ -434,9 +455,9 @@ var initializeNotLossSection = function() {
     // don't show tooltip for the sample data
     if (selectedPlayerId) {
       var total = Object.keys(model.players[selectedPlayerId].gameResults).length;
-      var percent = Math.round(1000 * d.data.count / total) / 10;
+      var percent = Math.round(1000 * d.data.value / total) / 10;
       tooltip.select(".tooltipLabel").html(d.data.label);
-      tooltip.select(".tooltipCount").html(d.data.count);
+      tooltip.select(".tooltipCount").html(d.data.value);
       tooltip.select(".tooltipPercent").html(percent + "%");
       tooltip.style("display", "block");
     }
@@ -466,24 +487,14 @@ var renderNotLossSection = function() {
   const svgHeight = pieHeight + legendPadding + legendRectSize;
   const svgWidth = pieWidth;
 
-  const defaultDataset = [
-    { label: "Losses", color: "#eeeeee", count: 1 },
-    { label: "Rate delta", color: "#666666", count: 0},
-    { label: "Not losses", color: "#cccccc", count: 5}
-  ];
-
-  var dataset = defaultDataset;
+  var dataset = getNotLossChartDataset();
   if (selectedPlayerId) {
     var playerAnalysis = model.stats.playerAnalyses[selectedPlayerId];
     var notLossCount = playerAnalysis.notLossCounts[selectedPlayerCount];
     var lossCount = playerAnalysis.gameCounts[selectedPlayerCount] - notLossCount;
 
     if (selectedNotLossComparisonPlayerId === "none") {
-      dataset = [
-        { label: "Losses", color: "#ffcc00", count: lossCount },
-        { label: "Rate delta", color: "#00cccc", count: 0 },
-        { label: "Not losses", color: "#00cccc", count: notLossCount }
-      ];
+      dataset = getNotLossChartDataset(lossCount, notLossCount);
     } else {
       var lossRate = lossCount / (lossCount + notLossCount);
       var notLossRate = 1 - lossRate;
@@ -503,32 +514,17 @@ var renderNotLossSection = function() {
 
       var sharedLosses = Math.min(lossRate, comparisonLossRate);
       var sharedNotLosses = Math.min(notLossRate, comparisonNotLossRate);
+      var rateDelta = notLossRate - comparisonNotLossRate;
 
-      var rateDelta = Math.abs(notLossRate - comparisonNotLossRate);
-      var deltaDataPoint = { label: "Rate delta", count: 100 * rateDelta };
-      deltaDataPoint.color = notLossRate >= comparisonNotLossRate ? "#aadd88" : "#cc4444";
-      dataset = [
-        { label: "Losses", color: "#ffcc00", count: 100 * sharedLosses },
-        deltaDataPoint,
-        { label: "Not losses", color: "#00cccc", count: 100 * sharedNotLosses }
-      ];
+      dataset = getNotLossChartDataset(100 * sharedLosses, 100 * sharedNotLosses, 100 * rateDelta);
     }
   } else if (selectedNotLossComparisonPlayerId !== "none") {
-    dataset[0].count = 0.75;
-    dataset[1].count = 0.25;
+    dataset = getNotLossChartDataset(undefined, undefined, true);
   }
 
   var svg = d3.select("#notLossesChart");
 
   // pie
-  var arc = d3.arc()
-    .innerRadius(innerRadius)
-    .outerRadius(outerRadius);
-
-  var pie = d3.pie()
-    .value(function(d) { return d.count; })
-    .sort(null);
-
   var arcs = svg.selectAll("path")
     .data(pie(dataset));
 
