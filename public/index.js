@@ -27,6 +27,8 @@ $(document).ready(function() {
   // set up player stats
   initializeNotLossSection();
   $("#playerSelect").change(function() {
+    selectedPlayerCount = 0;
+    selectedNotLossComparisonPlayerId = "none";
     renderPlayerSelect();
     renderPlayerCountOptions();
     renderNotLossComparisonPlayerSelect();
@@ -46,7 +48,7 @@ $(document).ready(function() {
     // If newly selected player has no data for the selected player count, switch to "any" (0)
     selectedPlayerCount = $('input[name=playerCount]:checked').val();
     if (selectedNotLossComparisonPlayerId !== "none" &&
-        selectedNotLossComparisonPlayerId !== "expected" &&
+        selectedNotLossComparisonPlayerId !== "random" &&
         !model.stats.playerAnalyses[selectedNotLossComparisonPlayerId].gameCounts[selectedPlayerCount]) {
       selectedPlayerCount = 0;
     }
@@ -319,7 +321,7 @@ var renderPlayerCountOptions = function() {
           + playerCount + '"';
         if (selectedPlayerCount == playerCount) {
           optionsRadioHtml += '  checked';
-        } else if (selectedNotLossComparisonPlayerId != "none" && selectedNotLossComparisonPlayerId != "expected" &&
+        } else if (selectedNotLossComparisonPlayerId != "none" && selectedNotLossComparisonPlayerId != "random" &&
             !model.stats.playerAnalyses[selectedNotLossComparisonPlayerId].gameCounts[playerCount]) {
           // grey out the option because the other player doesn't have data for this player count
           optionsRadioHtml += '  disabled';
@@ -334,7 +336,7 @@ var renderPlayerCountOptions = function() {
 // Uses current value of selectedPlayerId and selectedNotLossComparisonPlayerId
 var renderNotLossComparisonPlayerSelect = function() {
   var selectHtml = '<option value="none">None</option>'
-  + '<option value="expected">Expected rate (random)</option>';
+  + '<option value="random">Random rate</option>';
   
   if (selectedPlayerId) {
     // only include players with data for the selected # of games
@@ -396,6 +398,7 @@ var getNotLossChartDataset = function(losses, notLosses, delta) {
 
     if (delta) {
       result[1].value = Math.abs(delta);
+      result[1].signedDelta = delta;
       result[1].color = delta >= 0 ? "#aadd88" : "#cc4444";
     }
   } else if (delta) {
@@ -407,8 +410,6 @@ var getNotLossChartDataset = function(losses, notLosses, delta) {
 };
 
 var initializeNotLossSection = function() {
-  // to prevent hard-coding these #s
-
   var dataset = getNotLossChartDataset();
 
   var svg = d3.select("#notLossesChart")
@@ -442,33 +443,57 @@ var initializeNotLossSection = function() {
   $(".legendItem.delta", $legend).hide();
 
 
-  var tooltip = d3.select("#notLossesChart")
-    .append("div")
-    .attr("class", "chartTooltip");
-
-  tooltip.append("div").attr("class", "tooltipLabel");
-  tooltip.append("div").attr("class", "tooltipCount");
-  tooltip.append("div").attr("class", "tooltipPercent");
-  tooltip.style("display", "none");
+  var $tooltip = $(".pieChartTooltip");
+  $tooltip.hide();
 
   arcs.on("mouseover", function(d) {
     // don't show tooltip for the sample data
+    $(".tooltipSection", $tooltip).hide();
     if (selectedPlayerId) {
-      var total = Object.keys(model.players[selectedPlayerId].gameResults).length;
-      var percent = Math.round(1000 * d.data.value / total) / 10;
-      tooltip.select(".tooltipLabel").html(d.data.label);
-      tooltip.select(".tooltipCount").html(d.data.value);
-      tooltip.select(".tooltipPercent").html(percent + "%");
-      tooltip.style("display", "block");
+      if (selectedNotLossComparisonPlayerId === "none") {
+        // show counts + % for non-comparison data
+        var total = Object.keys(model.players[selectedPlayerId].gameResults).length;
+        var percent = Math.round(1000 * d.data.value / total) / 10;
+        $(".tooltipLabel", $tooltip).html(d.data.label);
+        $(".tooltipCount", $tooltip).html(d.data.value + (d.data.value == 1 ? " game" : " games"));
+        $(".tooltipPercent", $tooltip).html(percent + "%");
+        $(".noComparison", $tooltip).show();
+
+      } else  {
+        var playerName = model.players[selectedPlayerId].name;
+        var comparisonName = selectedNotLossComparisonPlayerId == "random" ? 
+          "random" : model.players[selectedNotLossComparisonPlayerId].name;
+
+        if (d.data.label === "Losses" || d.data.label === "Not losses") {
+          // show %s for both players
+          $(".tooltipLabel", $tooltip).html(d.data.label);
+          $(".playerRow .name", $tooltip).html(playerName);
+          $(".playerRow .percent", $tooltip).html(d.data.playerPercent + "%");
+          $(".comparisonRow .name", $tooltip).html(comparisonName);
+          $(".comparisonRow .percent", $tooltip).html(d.data.comparisonPercent + "%");
+          $(".comparison", $tooltip).show();
+
+        } else {
+          if (d.data.signedDelta >= 0) {
+            tooltipText = playerName + " outperforms " + comparisonName + " by " + d.data.value + "%";
+          } else {
+            tooltipText = playerName + " underperforms " + comparisonName + " by " + d.data.value + "%";
+          }
+          // if they perform equally, the section is invisible/can't be hovered
+          $(".tooltipText", $tooltip).html(tooltipText);
+          $(".delta", $tooltip).show();        
+        }
+      }
+      $tooltip.show();
     }
   });
   arcs.on("mouseout", function(d) {
-    tooltip.style("display", "none");
+    $tooltip.hide();
   })
   arcs.on("mousemove", function(d) {
-    tooltip
-      .style("left", (d3.event.clientX + 10) + "px")
-      .style("top", (d3.event.clientY + 10) + "px");
+    $tooltip
+      .css("left", (d3.event.clientX + 10) + "px")
+      .css("top", (d3.event.clientY + 10) + "px");
   });
 };
 
@@ -500,9 +525,9 @@ var renderNotLossSection = function() {
       var notLossRate = 1 - lossRate;
       var comparisonLossRate;
       var comparisonNotLossRate;
-      if (selectedNotLossComparisonPlayerId === "expected") {
-        var comparisonExpectedLossRate = playerAnalysis.expectedLosses / playerAnalysis.gameCounts[selectedPlayerCount];
-        comparisonLossRate = selectedPlayerCount == 0 ? comparisonExpectedLossRate : 1 / selectedPlayerCount;
+      if (selectedNotLossComparisonPlayerId === "random") {
+        var comparisonRandomLossRate = playerAnalysis.expectedLosses / playerAnalysis.gameCounts[selectedPlayerCount];
+        comparisonLossRate = selectedPlayerCount == 0 ? comparisonRandomLossRate : 1 / selectedPlayerCount;
         comparisonNotLossRate = 1 - comparisonLossRate;
       } else {
         var otherPlayerAnalysis = model.stats.playerAnalyses[selectedNotLossComparisonPlayerId];
@@ -516,7 +541,15 @@ var renderNotLossSection = function() {
       var sharedNotLosses = Math.min(notLossRate, comparisonNotLossRate);
       var rateDelta = notLossRate - comparisonNotLossRate;
 
-      dataset = getNotLossChartDataset(100 * sharedLosses, 100 * sharedNotLosses, 100 * rateDelta);
+      sharedLosses = Math.round(1000 * sharedLosses) / 10;
+      sharedNotLosses = Math.round(1000 * sharedNotLosses) / 10;
+      rateDelta = Math.round(1000 * rateDelta) / 10;
+
+      dataset = getNotLossChartDataset(sharedLosses, sharedNotLosses, rateDelta);
+      dataset[0].playerPercent = Math.round(1000 * lossRate) / 10;
+      dataset[0].comparisonPercent = Math.round(1000 * comparisonLossRate) / 10;
+      dataset[2].playerPercent = Math.round(1000 * notLossRate) / 10;
+      dataset[2].comparisonPercent = Math.round(1000 * comparisonNotLossRate) / 10;
     }
   } else if (selectedNotLossComparisonPlayerId !== "none") {
     dataset = getNotLossChartDataset(undefined, undefined, true);

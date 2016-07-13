@@ -223,13 +223,16 @@ li .filterCategory {
   margin-right: 8px;
 }
 
-.chartTooltip {
+.pieChartTooltip {
   background-color: #fff;
   position: fixed;
-  width: 160px;
+  min-width: 100px;
+  max-width: 200px;
   padding: 16px;
-  box-shadow: 0px 4px 8px -4px rgba(0, 0, 0, 0.3);
+  box-shadow: 0px 4px 16px -4px rgba(0, 0, 0, 0.5);
 }
-.chartTooltip .tooltipLabel {
+.pieChartTooltip   .tooltipLabel {
   font-weight: bold;
 }
+.pieChartTooltip .comparison .name { float: left; margin-right: 32px;}
+.pieChartTooltip .comparison .percent { float: right;}
