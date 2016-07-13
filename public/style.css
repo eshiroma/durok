@@ -83,9 +83,8 @@ input, select, option {
 .dateInputLabel {
   margin-left: 16px;
 }
-.filtersWrapper {
+.filtersOptionsWrapper {
   float: right;
-  z-index: 1;
 }
 
 table {
@@ -179,6 +178,7 @@ li .filterCategory {
   background-color: #eee;
   box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.3);
   width: 100%;
+  z-index: 1;
 }
 #gameFilters {
   max-width: 800px;
