@@ -419,7 +419,7 @@ var initializeNotLossSection = function() {
     .attr("width", svgWidth)
     .attr("height", svgHeight)
     .append("g")
-    .attr("transform", "translate(" + (svgWidth / 2) + "," + (svgHeight / 2) + ")");
+    .attr("transform", "translate(" + (svgWidth / 2) + "," + (-4 + svgHeight / 2) + ")");
 
   var arcs = svg.selectAll("path")
     .data(pie(dataset))
