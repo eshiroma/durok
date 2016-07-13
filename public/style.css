@@ -245,14 +245,16 @@ li .filterCategory {
   margin-right: 32px;
 }
 
+#comparisonStatSelect {
+  float: right;
+}
 #comparisonChart .bar {
-  background-color: #00cccc;
   color: #fff;
   height: 32px;
 }
 #comparisonChart .barLabel {
   width: 160px;
-  padding-right: 8px;
+  padding-right: 16px;
   text-align: right;
   line-height: 32px;
 }
@@ -263,6 +265,6 @@ li .filterCategory {
 }
 #comparisonChart .barRow .bar {
   position: absolute;
-  left: 168px;
+  left: 176px;
   top: 4px;
 }

@@ -70,6 +70,13 @@ var selectedPlayerId;
 var selectedPlayerCount = 0;
 var selectedNotLossComparisonPlayerId = "none";
 
+const COLOR = {
+  "goldenrod": "#ffcc00",
+  "green": "#aadd88",
+  "red": "#cc4444",
+  "teal": "#00cccc"
+};
+
 const STAT_INFO = {
   "rank": { defaultIsDescending: false },
   "name": { defaultIsDescending: false },
@@ -389,16 +396,16 @@ var getNotLossChartDataset = function(losses, notLosses, delta) {
   ];
   if (losses || notLosses) { // one (but not both) may be zero
     result[0].value = losses;
-    result[0].color = "#ffcc00";
+    result[0].color = COLOR.goldenrod;
 
     result[2].value = notLosses;
-    result[2].color = "#00cccc";
-    result[1].color = "#00cccc";
+    result[2].color = COLOR.teal;
+    result[1].color = COLOR.teal;
 
     if (delta) {
       result[1].value = Math.abs(delta);
       result[1].signedDelta = delta;
-      result[1].color = delta >= 0 ? "#aadd88" : "#cc4444";
+      result[1].color = delta >= 0 ? COLOR.green : COLOR.red;
     }
   } else if (delta) {
     result[0].value = 2;
@@ -600,7 +607,14 @@ var renderNotLossSection = function() {
 
 // TODO: use comparisonChart.clientWidth
 var renderStatComparisonSection = function() {
-  var dataset = [2,4,2,1,8,9,4,6];
+  var dataset = [
+    { playerName: "Andrew Gammon", value: 7, isSelectedPlayer: false },
+    { playerName: "Austin Podoll-Arechiga", value: 9, isSelectedPlayer: true },
+    { playerName: "Becky Gilbertson", value: 6, isSelectedPlayer: false },
+    { playerName: "Ben Saari", value: 3, isSelectedPlayer: false },
+    { playerName: "Erika Shiroma", value: 11, isSelectedPlayer: false },
+    { playerName: "Sean Aryana", value: 8, isSelectedPlayer: false }
+  ];
 
   var chart = d3.select("#comparisonChart")
   
@@ -613,15 +627,16 @@ var renderStatComparisonSection = function() {
   var barLabels = barRows
     .append("div")
     .attr("class", "barLabel")
-    .text(function(d) { return d; });
+    .text(function(d) { return d.playerName; });
 
   var maxBarWidth = $("#comparisonChart").width() - 168 - 16;
-  var maxValue = 9;
+  var maxValue = 11;
   var barWidthMultiplier = maxBarWidth / maxValue;
   var bars = barRows
     .append("div")
     .attr("class", "bar")
-    .style("width", function(d) { return d * barWidthMultiplier + "px"; });
+    .style("background-color", function(d) { return d.isSelectedPlayer ? COLOR.goldenrod : COLOR.teal; })
+    .style("width", function(d) { return d.value * barWidthMultiplier + "px"; });
 };
 
 var rankPlayerIds = function(scores, stat) {
