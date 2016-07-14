@@ -281,4 +281,14 @@ li .filterCategory {
   margin-left: 176px;
 }
 
-#comparisonSortOptions { float: right; }
+#comparisonSortOptions input {
+  vertical-align: middle;
+  margin-right: 4px;
+  margin-left: 16px;
+}
+
+#comparisonSortOptions label:first-child { font-weight: bold; }
+#comparisonSortOptions {
+  float: right;
+  margin-top: 4px;
+}

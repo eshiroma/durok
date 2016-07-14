@@ -653,8 +653,8 @@ var initializeStatComparisonSection = function() {
       return d.isSelectedPlayer ? "bold" : "normal"
     });
 
-  var maxBarWidth = $("#statComparison").width() - 168 - 16;
-  var maxValue = dataset.reduce(function(max, curr) { return Math.max(max, curr.value); }, 0);
+  var maxBarWidth = $("#statComparison").width() - 168 - 32;
+  var maxValue = dataset.reduce(function(max, curr) { return Math.max(max, Math.abs(curr.value)); }, 0);
   var barWidthMultiplier = maxBarWidth / maxValue;
 
   var bars = d3.select("#comparisonChartBars")
@@ -671,7 +671,7 @@ var initializeStatComparisonSection = function() {
       }
     })
     .style("width", function(d) {
-      return Math.abs(d.value) * barWidthMultiplier + "px";
+      return 4 + Math.abs(d.value) * barWidthMultiplier + "px";
     });
 };
 
@@ -690,7 +690,7 @@ var renderStatComparisonSection = function() {
     });
 
   var maxBarWidth = $("#statComparison").width() - 168 - 32;
-  var maxValue = dataset.reduce(function(max, curr) { return Math.max(max, curr.value); }, 0);
+  var maxValue = dataset.reduce(function(max, curr) { return Math.max(max, Math.abs(curr.value)); }, 0);
   var barWidthMultiplier = maxBarWidth / maxValue;
   
   var bars = d3.select("#comparisonChartBars")

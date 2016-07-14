@@ -85,11 +85,13 @@ body
 
         div(id="statComparison", class="analysisSection")
           div(id="comparisonSortOptions")
-            | Sort by
-            input(type="radio", name="comparisonSort", value="name")
-            | Player name
-            input(type="radio", name="comparisonSort", value="stat", checked)
-            | Stat value
+            label Sort by
+            label
+              input(type="radio", name="comparisonSort", value="name")
+              | Player name
+            label 
+              input(type="radio", name="comparisonSort", value="stat", checked)
+              | Stat value
 
           h2 Stat comparison
 
