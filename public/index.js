@@ -56,6 +56,14 @@ $(document).ready(function() {
     renderNotLossSection();
   });
 
+  $("#comparisonStatSelect").change(function() {
+    // The stat select html is already updated - update internal comparisonStat
+    var comparisonStatSelect = document.getElementById("comparisonStatSelect");
+    comparisonStat = comparisonStatSelect.options[comparisonStatSelect.selectedIndex].value;
+    // Now re-render chart
+    updateStatComparisonSection();
+  });
+
   // initial page render
   render();
 });
@@ -69,6 +77,7 @@ var isDescending = true;
 var selectedPlayerId;
 var selectedPlayerCount = 0;
 var selectedNotLossComparisonPlayerId = "none";
+var comparisonStat = "notLossScore";
 
 const COLOR = {
   "goldenrod": "#ffcc00",
@@ -605,38 +614,84 @@ var renderNotLossSection = function() {
   }
 };
 
-// TODO: use comparisonChart.clientWidth
-var renderStatComparisonSection = function() {
-  var dataset = [
-    { playerName: "Andrew Gammon", value: 7, isSelectedPlayer: false },
-    { playerName: "Austin Podoll-Arechiga", value: 9, isSelectedPlayer: true },
-    { playerName: "Becky Gilbertson", value: 6, isSelectedPlayer: false },
-    { playerName: "Ben Saari", value: 3, isSelectedPlayer: false },
-    { playerName: "Erika Shiroma", value: 11, isSelectedPlayer: false },
-    { playerName: "Sean Aryana", value: 8, isSelectedPlayer: false }
-  ];
+var getComparisonDataset = function() {
+  var result = [];
+  rankPlayerIds(model.scores, "name").forEach(function(playerId) {
+    var value = model.scores[playerId][comparisonStat];
+    result.push({
+      playerName: model.players[playerId].name,
+      value: value,
+      isSelectedPlayer: playerId == selectedPlayerId
+    })
+  });
+  return result;
+}
 
-  var chart = d3.select("#comparisonChart")
-  
-  var barRows = chart.selectAll("div")
+var renderStatComparisonSection = function() {
+  dataset = getComparisonDataset();
+
+  var chartNames = d3.select("#comparisonChartNames")
+    .selectAll(".barLabel")
     .data(dataset)
     .enter()
     .append("div")
-    .attr("class", "barRow");
-
-  var barLabels = barRows
-    .append("div")
     .attr("class", "barLabel")
-    .text(function(d) { return d.playerName; });
+    .text(function(d) { return d.playerName; })
+    .style("font-weight", function(d) {
+      return d.isSelectedPlayer ? "bold" : "normal"
+    });
 
-  var maxBarWidth = $("#comparisonChart").width() - 168 - 16;
-  var maxValue = 11;
+  var maxBarWidth = $("#statComparison").width() - 168 - 16;
+  var maxValue = dataset.reduce(function(max, curr) { return Math.max(max, curr.value); }, 0);
   var barWidthMultiplier = maxBarWidth / maxValue;
-  var bars = barRows
+
+  var bars = d3.select("#comparisonChartBars")
+    .selectAll(".bar")
+    .data(dataset)
+    .enter()
     .append("div")
     .attr("class", "bar")
-    .style("background-color", function(d) { return d.isSelectedPlayer ? COLOR.goldenrod : COLOR.teal; })
-    .style("width", function(d) { return d.value * barWidthMultiplier + "px"; });
+    .style("background-color", function(d) {
+      if (comparisonStat == "notLossScore" || comparisonStat == "playScore") {
+        return d.value >= 0 ? COLOR.green : COLOR.red;
+      } else {
+        return d.isSelectedPlayer ? COLOR.goldenrod : COLOR.teal;
+      }
+    })
+    .style("width", function(d) {
+      return Math.abs(d.value) * barWidthMultiplier + "px";
+    });
+};
+
+var updateStatComparisonSection = function() {
+  dataset = getComparisonDataset();
+
+  var chartNames = d3.select("#comparisonChartNames")
+    .selectAll(".barLabel")
+    .data(dataset)
+    .text(function(d) { return d.playerName; })
+    .style("font-weight", function(d) {
+      return d.isSelectedPlayer ? "bold" : "normal"
+    });
+
+  var maxBarWidth = $("#statComparison").width() - 168 - 32;
+  var maxValue = dataset.reduce(function(max, curr) { console.log(curr.playerName, curr.value); return Math.max(max, curr.value); }, 0);
+  var barWidthMultiplier = maxBarWidth / maxValue;
+  
+  var bars = d3.select("#comparisonChartBars")
+    .selectAll(".bar")
+    .data(dataset)
+    .transition(500)
+    .style("background-color", function(d) {
+      if (comparisonStat == "notLossScore" || comparisonStat == "playScore") {
+        return d.value >= 0 ? COLOR.green : COLOR.red;
+      } else {
+        return d.isSelectedPlayer ? COLOR.goldenrod : COLOR.teal;
+      }
+    })
+    .style("width", function(d) {
+      return 4 + Math.abs(d.value) * barWidthMultiplier + "px";
+    });
 };
 
 var rankPlayerIds = function(scores, stat) {

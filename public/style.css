@@ -57,7 +57,6 @@ section {
 }
 
 input, select, option {
-  font-size: 12px;
   height: 28px;
   padding: 0 4px;
   margin-left: 8px;
@@ -66,6 +65,11 @@ input, select, option {
   -webkit-box-sizing: border-box;
   border: none;
   border-bottom: 1px solid #ddd;
+}
+#gameFilters input,
+#gameFilters select,
+#gameFilters option {
+  font-size: 12px;
 }
 
 #scoreFilters {
@@ -245,26 +249,34 @@ li .filterCategory {
   margin-right: 32px;
 }
 
+
+.barChartHeader {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.comparisonChartWrapper { position: relative; }
+
 #comparisonStatSelect {
-  float: right;
+  font-weight: bold;
+  font-size: 16px;
+  margin: 6px 0 0 8px;
+  padding: 0;
 }
-#comparisonChart .bar {
-  color: #fff;
+
+#comparisonChartBars .bar {
   height: 32px;
+  margin-left: 12px;
+  margin-top: 8px;
 }
-#comparisonChart .barLabel {
-  width: 160px;
-  padding-right: 16px;
-  text-align: right;
-  line-height: 32px;
-}
-#comparisonChart .barRow {
-  position: relative;
-  clear: both;
-  padding: 4px;
-}
-#comparisonChart .barRow .bar {
+
+#comparisonChartNames {
   position: absolute;
-  left: 176px;
-  top: 4px;
+  width: 160px;
+  line-height: 40px;
+  text-align: right;
+}
+#comparisonChartBars {
+  width: 100%;
+  margin-left: 160px;
 }

@@ -84,17 +84,21 @@ body
             div(id="notLossesPlayerCount")
 
         div(id="statComparison" class="analysisSection")
-          div(class="comparisonChartWrapper")
-            select(id="comparisonStatSelect")
-              option(value="plays") Plays
-              option(value="losses") Losses
-              option(value="notLosses") Not losses
-              option(value="notLossScore" selected) Not loss score
-              option(value="playScore") Play score
-              option(value="notLossPercent") Not loss %
-          
           h2 Stat comparison
-          div(id="comparisonChart")
+
+          div(class="comparisonChartWrapper")
+            div(id="comparisonChartNames")
+              div(class="barLabelHeader barChartHeader") Player name
+            div(id="comparisonChartBars")
+              select(id="comparisonStatSelect" class="barLabelHeader")
+                option(value="plays") Plays
+                option(value="losses") Losses
+                option(value="notLosses") Not losses
+                option(value="notLossScore" selected) Not loss score
+                option(value="playScore") Play score
+                option(value="notLossPercent") Not loss %
+          
+
 
 
 
