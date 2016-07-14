@@ -33,6 +33,7 @@ $(document).ready(function() {
     renderPlayerCountOptions();
     renderNotLossComparisonPlayerSelect();
     renderNotLossSection();
+    renderStatComparisonSection();
   });
 
   $("#notLossesPlayerCount").change(function() {
@@ -56,6 +57,18 @@ $(document).ready(function() {
     renderNotLossSection();
   });
 
+  $("#comparisonStatSelect").change(function() {
+    // The stat select html is already updated - update internal comparisonStat
+    var comparisonStatSelect = document.getElementById("comparisonStatSelect");
+    comparisonStat = comparisonStatSelect.options[comparisonStatSelect.selectedIndex].value;
+    // Now re-render chart
+    renderStatComparisonSection();
+  });
+  $("#comparisonSortOptions").change(function() {
+    comparisonSortBy = $('input[name=comparisonSort]:checked').val();
+    renderStatComparisonSection();
+  });
+
   // initial page render
   render();
 });
@@ -69,6 +82,18 @@ var isDescending = true;
 var selectedPlayerId;
 var selectedPlayerCount = 0;
 var selectedNotLossComparisonPlayerId = "none";
+var comparisonStat = "notLossScore";
+var comparisonSortBy = "stat";
+
+const COLOR = {
+  "goldenrod": "#ffcc00",
+  "green": "#aadd88",
+  "lightGreen": "#ddf1cf",
+  "red": "#cc4444",
+  "lightRed": "#eab4b4",
+  "teal": "#00cccc",
+  "lightTeal": "#b2efef"
+};
 
 const STAT_INFO = {
   "rank": { defaultIsDescending: false },
@@ -101,10 +126,12 @@ var render = function(domainId, startDate, endDate) {
     document.getElementById("playerSelect").selectedIndex = 0;
     selectedPlayerCount = 0;
     selectedNotLossComparisonPlayerId = "none";
+
     renderPlayerSelect();
     renderPlayerCountOptions();
     renderNotLossComparisonPlayerSelect();
     renderNotLossSection();
+    initializeStatComparisonSection();
     
     if (Object.keys(model.games).length > 0) {
       renderRankTable(model.scores);
@@ -389,16 +416,16 @@ var getNotLossChartDataset = function(losses, notLosses, delta) {
   if (losses !== undefined && notLosses !== undefined) {
     // both may be zero (one not loss percent is 0, the other is 100)
     result[0].value = losses;
-    result[0].color = "#ffcc00";
+    result[0].color = COLOR.goldenrod;
 
     result[2].value = notLosses;
-    result[2].color = "#00cccc";
-    result[1].color = "#00cccc";
+    result[2].color = COLOR.teal;
+    result[1].color = COLOR.teal;
 
     if (delta) {
       result[1].value = Math.abs(delta);
       result[1].signedDelta = delta;
-      result[1].color = delta >= 0 ? "#aadd88" : "#cc4444";
+      result[1].color = delta >= 0 ? COLOR.green : COLOR.red;
     }
   } else if (delta) {
     result[0].value = 2;
@@ -456,7 +483,7 @@ var initializeNotLossSection = function() {
       if (selectedNotLossComparisonPlayerId === "none") {
         // show counts + % for non-comparison data
         var total = Object.keys(model.players[selectedPlayerId].gameResults).length;
-        var percent = Math.round(1000 * d.data.value / total) / 10;
+        var percent = (100 * d.data.value / total).toFixed(3);
         $(".tooltipLabel", $tooltip).html(d.data.label);
         $(".tooltipCount", $tooltip).html(d.data.value + (d.data.value == 1 ? " game" : " games"));
         $(".tooltipPercent", $tooltip).html(percent + "%");
@@ -541,15 +568,15 @@ var renderNotLossSection = function() {
       var sharedNotLosses = Math.min(notLossRate, comparisonNotLossRate);
       var rateDelta = notLossRate - comparisonNotLossRate;
 
-      sharedLosses = Math.round(1000 * sharedLosses) / 10;
-      sharedNotLosses = Math.round(1000 * sharedNotLosses) / 10;
-      rateDelta = Math.round(1000 * rateDelta) / 10;
+      sharedLosses = (100 * sharedLosses).toFixed(3);
+      sharedNotLosses = (100 * sharedNotLosses).toFixed(3);
+      rateDelta = (100 * rateDelta).toFixed(3);
 
       dataset = getNotLossChartDataset(sharedLosses, sharedNotLosses, rateDelta);
-      dataset[0].playerPercent = Math.round(1000 * lossRate) / 10;
-      dataset[0].comparisonPercent = Math.round(1000 * comparisonLossRate) / 10;
-      dataset[2].playerPercent = Math.round(1000 * notLossRate) / 10;
-      dataset[2].comparisonPercent = Math.round(1000 * comparisonNotLossRate) / 10;
+      dataset[0].playerPercent = (100 * lossRate).toFixed(3);
+      dataset[0].comparisonPercent = (100 * comparisonLossRate).toFixed(3);
+      dataset[2].playerPercent = (100 * notLossRate).toFixed(3);
+      dataset[2].comparisonPercent = (100 * comparisonNotLossRate).toFixed(3);
     }
   } else if (selectedNotLossComparisonPlayerId !== "none") {
     dataset = getNotLossChartDataset(undefined, undefined, true);
@@ -596,6 +623,124 @@ var renderNotLossSection = function() {
   } else {
     $(".legendItem.delta", $legend).hide();
   }
+};
+
+var getComparisonDataset = function() {
+  var result = [];
+  var sortByStat = comparisonSortBy == "name" ? "name" : comparisonStat;
+  rankPlayerIds(model.scores, sortByStat).forEach(function(playerId) {
+    var value = model.scores[playerId][comparisonStat];
+    result.push({
+      playerName: model.players[playerId].name,
+      value: value,
+      isSelectedPlayer: playerId == selectedPlayerId
+    })
+  });
+  return result;
+}
+
+var initializeStatComparisonSection = function() {
+  dataset = getComparisonDataset();
+
+  // clear out any existing crap from previous game filter renders
+  $("#comparisonChartNames").html("");
+  $("#comparisonChartBars").html("");
+
+  var chartNames = d3.select("#comparisonChartNames")
+    .selectAll(".barLabel")
+    .data(dataset)
+    .enter()
+    .append("div")
+    .attr("class", "barLabel")
+    .text(function(d) { return d.playerName; })
+    .style("font-weight", function(d) {
+      return d.isSelectedPlayer ? "bold" : "normal"
+    });
+
+  var maxBarWidth = $("#statComparison").width() - 168 - 32;
+  var maxValue = dataset.reduce(function(max, curr) { return Math.max(max, Math.abs(curr.value)); }, 0);
+  var barWidthMultiplier = maxBarWidth / maxValue;
+
+  var bars = d3.select("#comparisonChartBars")
+    .selectAll(".bar")
+    .data(dataset)
+    .enter()
+    .append("div")
+    .attr("class", "bar")
+    .style("background-color", function(d) {
+      if (comparisonStat == "notLossScore" || comparisonStat == "playScore") {
+        return d.value >= 0 ? COLOR.green : COLOR.red;
+      } else {
+        return d.isSelectedPlayer ? COLOR.goldenrod : COLOR.teal;
+      }
+    })
+    .style("width", function(d) {
+      return 4 + Math.abs(d.value) * barWidthMultiplier + "px";
+    });
+
+  var $tooltip = $(".comparisonChartTooltip");
+  $tooltip.hide();
+
+  bars.on("mouseover", function(d) {
+    $(".tooltipLabel", $tooltip).html(d.playerName);
+    if (comparisonStat === "notLossPercent") {
+      $(".tooltipValue", $tooltip).html(d.value.toFixed(3) + "%");
+    } else if (comparisonStat === "notLossScore" || comparisonStat === "playScore") {
+      $(".tooltipValue", $tooltip).html(d.value.toFixed(4));
+    } else {
+      $(".tooltipValue", $tooltip).html(d.value);
+    }
+    $tooltip.show();
+  });
+  bars.on("mouseout", function(d) {
+    $tooltip.hide();
+  })
+  bars.on("mousemove", function(d) {
+    $tooltip
+      .css("left", (d3.event.clientX + 10) + "px")
+      .css("top", (d3.event.clientY + 10) + "px");
+  });
+};
+
+var renderStatComparisonSection = function() {
+  dataset = getComparisonDataset();
+
+  var chartNames = d3.select("#comparisonChartNames")
+    .selectAll(".barLabel")
+    .data(dataset);
+
+  chartNames.exit().remove();
+  chartNames
+    .text(function(d) { return d.playerName; })
+    .style("font-weight", function(d) {
+      return d.isSelectedPlayer ? "bold" : "normal"
+    });
+
+  var maxBarWidth = $("#statComparison").width() - 168 - 32;
+  var maxValue = dataset.reduce(function(max, curr) { return Math.max(max, Math.abs(curr.value)); }, 0);
+  var barWidthMultiplier = maxBarWidth / maxValue;
+  
+  var bars = d3.select("#comparisonChartBars")
+    .selectAll(".bar")
+    .data(dataset);
+
+  bars.exit().remove();
+  bars
+    .transition(900)
+    .style("background-color", function(d) {
+      if (comparisonStat == "notLossScore" || comparisonStat == "playScore") {
+        if (d.value >= 0) {
+          return d.isSelectedPlayer ? COLOR.lightGreen : COLOR.green;
+        } else {
+          return d.isSelectedPlayer ? COLOR.lightRed : COLOR.red;
+        }
+      } else {
+        return d.isSelectedPlayer ? COLOR.lightTeal : COLOR.teal;
+      }
+    })
+    .style("width", function(d) {
+      return 4 + Math.abs(d.value) * barWidthMultiplier + "px";
+    });
 };
 
 var rankPlayerIds = function(scores, stat) {

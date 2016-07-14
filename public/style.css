@@ -57,7 +57,6 @@ section {
 }
 
 input, select, option {
-  font-size: 12px;
   height: 28px;
   padding: 0 4px;
   margin-left: 8px;
@@ -66,6 +65,11 @@ input, select, option {
   -webkit-box-sizing: border-box;
   border: none;
   border-bottom: 1px solid #ddd;
+}
+#gameFilters input,
+#gameFilters select,
+#gameFilters option {
+  font-size: 12px;
 }
 
 #scoreFilters {
@@ -186,6 +190,10 @@ li .filterCategory {
   margin: auto;
 }
 
+.analysisSection + .analysisSection {
+  margin-top: 64px;
+}
+
 .playerSelectWrapper {
   float: right;
   margin-top: 16px;
@@ -222,15 +230,19 @@ li .filterCategory {
   margin-right: 8px;
 }
 
-.pieChartTooltip {
+.chartTooltip {
   background-color: #fff;
   position: fixed;
   min-width: 100px;
   padding: 16px;
   box-shadow: 0px 4px 16px -4px rgba(0, 0, 0, 0.5);
 }
+.pieChartTooltip {
+  min-width: 100px;
+}
 .pieChartTooltip .tooltipLabel,
-.pieChartTooltip .performance {
+.pieChartTooltip .performance,
+.comparisonChartTooltip .tooltipLabel {
   font-weight: bold;
 }
 .pieChartTooltip .comparison .percent {
@@ -239,4 +251,48 @@ li .filterCategory {
 .pieChartTooltip .comparison .name {
   float: left;
   margin-right: 32px;
+}
+
+
+.barChartHeader {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.comparisonChartWrapper { position: relative; }
+
+#comparisonStatSelect {
+  font-weight: bold;
+  font-size: 16px;
+  margin: 6px 0 0 8px;
+  padding: 0;
+}
+
+.comparisonChartBarsWrapper .bar {
+  height: 32px;
+  margin-left: 12px;
+  margin-top: 8px;
+}
+
+.comparisonChartNamesWrapper {
+  position: absolute;
+  width: 176px;
+  line-height: 40px;
+  text-align: right;
+}
+.comparisonChartBarsWrapper {
+  width: 100%;
+  margin-left: 176px;
+}
+
+#comparisonSortOptions input {
+  vertical-align: middle;
+  margin-right: 4px;
+  margin-left: 16px;
+}
+
+#comparisonSortOptions label:first-child { font-weight: bold; }
+#comparisonSortOptions {
+  float: right;
+  margin-top: 4px;
 }
