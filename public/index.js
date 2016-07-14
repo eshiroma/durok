@@ -88,8 +88,11 @@ var comparisonSortBy = "stat";
 const COLOR = {
   "goldenrod": "#ffcc00",
   "green": "#aadd88",
+  "lightGreen": "#ddf1cf",
   "red": "#cc4444",
-  "teal": "#00cccc"
+  "lightRed": "#eab4b4",
+  "teal": "#00cccc",
+  "lightTeal": "#b2efef"
 };
 
 const STAT_INFO = {
@@ -479,7 +482,7 @@ var initializeNotLossSection = function() {
       if (selectedNotLossComparisonPlayerId === "none") {
         // show counts + % for non-comparison data
         var total = Object.keys(model.players[selectedPlayerId].gameResults).length;
-        var percent = Math.round(1000 * d.data.value / total) / 10;
+        var percent = (100 * d.data.value / total).toFixed(3);
         $(".tooltipLabel", $tooltip).html(d.data.label);
         $(".tooltipCount", $tooltip).html(d.data.value + (d.data.value == 1 ? " game" : " games"));
         $(".tooltipPercent", $tooltip).html(percent + "%");
@@ -564,15 +567,15 @@ var renderNotLossSection = function() {
       var sharedNotLosses = Math.min(notLossRate, comparisonNotLossRate);
       var rateDelta = notLossRate - comparisonNotLossRate;
 
-      sharedLosses = Math.round(1000 * sharedLosses) / 10;
-      sharedNotLosses = Math.round(1000 * sharedNotLosses) / 10;
-      rateDelta = Math.round(1000 * rateDelta) / 10;
+      sharedLosses = (100 * sharedLosses).toFixed(3);
+      sharedNotLosses = (100 * sharedNotLosses).toFixed(3);
+      rateDelta = (100 * rateDelta).toFixed(3);
 
       dataset = getNotLossChartDataset(sharedLosses, sharedNotLosses, rateDelta);
-      dataset[0].playerPercent = Math.round(1000 * lossRate) / 10;
-      dataset[0].comparisonPercent = Math.round(1000 * comparisonLossRate) / 10;
-      dataset[2].playerPercent = Math.round(1000 * notLossRate) / 10;
-      dataset[2].comparisonPercent = Math.round(1000 * comparisonNotLossRate) / 10;
+      dataset[0].playerPercent = (100 * lossRate).toFixed(3);
+      dataset[0].comparisonPercent = (100 * comparisonLossRate).toFixed(3);
+      dataset[2].playerPercent = (100 * notLossRate).toFixed(3);
+      dataset[2].comparisonPercent = (100 * comparisonNotLossRate).toFixed(3);
     }
   } else if (selectedNotLossComparisonPlayerId !== "none") {
     dataset = getNotLossChartDataset(undefined, undefined, true);
@@ -673,6 +676,29 @@ var initializeStatComparisonSection = function() {
     .style("width", function(d) {
       return 4 + Math.abs(d.value) * barWidthMultiplier + "px";
     });
+
+  var $tooltip = $(".comparisonChartTooltip");
+  $tooltip.hide();
+
+  bars.on("mouseover", function(d) {
+    $(".tooltipLabel", $tooltip).html(d.playerName);
+    if (comparisonStat === "notLossPercent") {
+      $(".tooltipValue", $tooltip).html(d.value.toFixed(3) + "%");
+    } else if (comparisonStat === "notLossScore" || comparisonStat === "playScore") {
+      $(".tooltipValue", $tooltip).html(d.value.toFixed(4));
+    } else {
+      $(".tooltipValue", $tooltip).html(d.value);
+    }
+    $tooltip.show();
+  });
+  bars.on("mouseout", function(d) {
+    $tooltip.hide();
+  })
+  bars.on("mousemove", function(d) {
+    $tooltip
+      .css("left", (d3.event.clientX + 10) + "px")
+      .css("top", (d3.event.clientY + 10) + "px");
+  });
 };
 
 var renderStatComparisonSection = function() {
@@ -702,9 +728,13 @@ var renderStatComparisonSection = function() {
     .transition(900)
     .style("background-color", function(d) {
       if (comparisonStat == "notLossScore" || comparisonStat == "playScore") {
-        return d.value >= 0 ? COLOR.green : COLOR.red;
+        if (d.value >= 0) {
+          return d.isSelectedPlayer ? COLOR.lightGreen : COLOR.green;
+        } else {
+          return d.isSelectedPlayer ? COLOR.lightRed : COLOR.red;
+        }
       } else {
-        return d.isSelectedPlayer ? COLOR.goldenrod : COLOR.teal;
+        return d.isSelectedPlayer ? COLOR.lightTeal : COLOR.teal;
       }
     })
     .style("width", function(d) {

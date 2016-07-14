@@ -108,8 +108,6 @@ body
                 option(value="playScore") Play score
                 option(value="notLossPercent") Not loss %
               div(id="comparisonChartBars")
-          
-
 
 
 
@@ -168,7 +166,7 @@ body
     div(id="playScoreTooltip" class="tooltip") -1 point per loss <br> + (1/# of players) per game
     div(id="totalTooltip" class="tooltip") Not loss score for the day:<br>-1 point per loss <br> + (1/# of non-losers) per not loss
 
-    div(class="pieChartTooltip")
+    div(class="pieChartTooltip chartTooltip")
       div(class="tooltipSection noComparison")
         div(class="tooltipLabel")
         div(class="tooltipCount")
@@ -183,3 +181,7 @@ body
           div(class="percent")
       div(class="tooltipSection delta")
         div(class="tooltipText")
+
+    div(class="comparisonChartTooltip chartTooltip")
+      div(class="tooltipLabel")
+      div(class="tooltipValue")
