@@ -264,19 +264,21 @@ li .filterCategory {
   padding: 0;
 }
 
-#comparisonChartBars .bar {
+.comparisonChartBarsWrapper .bar {
   height: 32px;
   margin-left: 12px;
   margin-top: 8px;
 }
 
-#comparisonChartNames {
+.comparisonChartNamesWrapper {
   position: absolute;
-  width: 160px;
+  width: 176px;
   line-height: 40px;
   text-align: right;
 }
-#comparisonChartBars {
+.comparisonChartBarsWrapper {
   width: 100%;
-  margin-left: 160px;
+  margin-left: 176px;
 }
+
+#comparisonSortOptions { float: right; }
