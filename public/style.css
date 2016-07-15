@@ -8,6 +8,11 @@ body {
   padding-bottom: 100px;
 }
 
+section,
+#playerAnalysis {
+  overflow: hidden;
+}
+
 .banner {
   color: #fff;
   background-size: 100%;
@@ -38,7 +43,7 @@ h1 {
   font-size: 36px;
 }
 
-h2 {
+h2.sectionSpacer {
   margin: 24px 0 8px 0;
 }
 
@@ -190,33 +195,64 @@ li .filterCategory {
   margin: auto;
 }
 
-.analysisSection + .analysisSection {
-  margin-top: 64px;
+#notLossRatio {
+  width: 37%;
+  float: left;
+}
+#statComparison {
+  width: 62%;
+  float: right;
+}
+@media(max-width: 767px) {
+  #notLossRatio,
+  #statComparison {
+    float: left;
+    width: 100%;
+  }
+  #statComparison {
+    margin-top: 32px;
+  }
 }
 
+.analysisSection h2 {
+  margin-top: 0;
+}
+.playerAnalysisHeaderWrapper {
+  position: relative;
+}
 .playerSelectWrapper {
-  float: right;
-  margin-top: 16px;
+  position: absolute;
+  top: 18px;
+  right: 0;
 }
 .playerSelectWrapper .label { font-size: 20px; }
 .playerSelectWrapper select,
 .playerSelectWrapper option { font-size: 16px; }
-
+@media(max-width: 767px) {
+  .playerSelectWrapper {
+    position: static;
+    margin-bottom: 32px;
+  }
+}
 
 #notLossRatio { position: relative; }
 .notLossesParams {
-  position: absolute;
-  top: 40px;
-  right: 64px;
+  clear: both;
+  margin-top: 24px;
 }
 
 .notLossesParams .label { font-size: 16px; }
 
 #notLossesPlayerCount input {
   vertical-align: middle;
-  margin-right: 8px;
+  margin-left: 0;
+  margin-right: 4px;
+  height: 24px;
 }
-#notLossesChartLegend { overflow: auto; }
+#notLossesPlayerCount input + input { margin-left: 20px; }
+#notLossesPlayerCount h4 { margin-bottom: 8px; }
+
+.notLossesChartLegend { overflow: hidden; }
 
 .legendItem,
 .legendItem .legendSquare {
@@ -257,6 +293,7 @@ li .filterCategory {
 .barChartHeader {
   font-weight: bold;
   font-size: 16px;
+  margin-bottom: 4px;
 }
 
 .comparisonChartWrapper { position: relative; }
@@ -264,12 +301,12 @@ li .filterCategory {
 #comparisonStatSelect {
   font-weight: bold;
   font-size: 16px;
-  margin: 6px 0 0 8px;
+  margin: 2px 0 0 8px;
   padding: 0;
 }
 
 .comparisonChartBarsWrapper .bar {
-  height: 32px;
+  height: 24px;
   margin-left: 12px;
   margin-top: 8px;
 }
@@ -277,7 +314,7 @@ li .filterCategory {
 .comparisonChartNamesWrapper {
   position: absolute;
   width: 176px;
-  line-height: 40px;
+  line-height: 32px;
   text-align: right;
 }
 .comparisonChartBarsWrapper {
@@ -285,14 +322,25 @@ li .filterCategory {
   margin-left: 176px;
 }
 
+.comparisonHeaderWrapper {
+  position: relative;
+}
+#comparisonSortOptions {
+  position: absolute;
+  top: 4px;
+  right: 0;
+}
+#comparisonSortOptions label:first-child {
+  font-weight: bold;
+}
 #comparisonSortOptions input {
   vertical-align: middle;
   margin-right: 4px;
   margin-left: 16px;
 }
-
-#comparisonSortOptions label:first-child { font-weight: bold; }
-#comparisonSortOptions {
-  float: right;
-  margin-top: 4px;
+@media(max-width: 767px) {
+  #comparisonSortOptions {
+    position: static;
+    margin-bottom: 16px;
+  }
 }
