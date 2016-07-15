@@ -130,9 +130,15 @@ var render = function(domainId, startDate, endDate) {
     if (Object.keys(model.players).indexOf(playerSelect.options[playerSelect.selectedIndex].value) < 0) {
       selectedPlayerId = undefined;
     }
-    // always just reset selected player count and comparison player
-    selectedPlayerCount = 0;
-    selectedNotLossComparisonPlayerId = "none";
+    // reset selected player count and/or comparison player if needed
+    if (!selectedPlayerId || !model.players[selectedPlayerId] ||
+        !model.stats.playerAnalyses[selectedPlayerId].gameCounts[selectedPlayerCount]) {
+      selectedPlayerCount = 0;
+      selectedNotLossComparisonPlayerId = "none";
+    } else if (selectedNotLossComparisonPlayerId != "none" && selectedNotLossComparisonPlayerId != "random" &&
+        !model.stats.playerAnalyses[selectedNotLossComparisonPlayerId].gameCounts[selectedPlayerCount]) {
+      selectedNotLossComparisonPlayerId = "none";
+    }
 
     renderPlayerSelect();
     renderPlayerCountOptions();
@@ -380,20 +386,15 @@ var renderNotLossComparisonPlayerSelect = function() {
       var numberOfGamesForPlayerCount = model.stats.playerAnalyses[otherPlayerId].gameCounts[selectedPlayerCount];
       if (otherPlayerId != selectedPlayerId && numberOfGamesForPlayerCount) {
         var playerName = model.players[otherPlayerId].name;
-        selectHtml += '<option value="' + otherPlayerId + '">' + playerName + '</option>';
+        selectHtml += '<option value="' + otherPlayerId + '"';
+        if (otherPlayerId == selectedNotLossComparisonPlayerId) {
+          selectHtml += ' selected';
+        }
+        selectHtml += '>' + playerName + '</option>';
       }
     });
   }
   $("#notLossesComparisonPlayerSelect").html(selectHtml);
-
-  var selectedIndex = 0;
-  var comparisonPlayerSelect = document.getElementById("notLossesComparisonPlayerSelect");
-  for (i = 0; i < comparisonPlayerSelect.options.length; i++) {
-    if (selectedNotLossComparisonPlayerId == comparisonPlayerSelect.options[i]) {
-      selectedIndex = i;
-    }
-  }
-  comparisonPlayerSelect.selectedIndex = selectedIndex;
 };
 
 var pieDiameter = 256;
