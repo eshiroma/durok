@@ -89,7 +89,7 @@ const COLOR = {
   "goldenrod": "#ffcc00",
   "green": "#aadd88",
   "lightGreen": "#ddf1cf",
-  "red": "#cc4444",
+  "red": "#b45c5c",
   "lightRed": "#eab4b4",
   "teal": "#00cccc",
   "lightTeal": "#b2efef"
@@ -151,7 +151,8 @@ var initializeFilters = function() {
     // Wait a moment after scrolling to show/hide filter bar
     $.data(this, 'scrollTimer', setTimeout(function() {
       var minScroll = 50;
-      var maxScroll = $("#scores").position().top + $("#scores").height();
+      var maxScroll = $("#scores").position().top + $("#scores").height() 
+        - ($("#playerAnalysis").height() / 2);
       if ($(this).scrollTop() > minScroll && $(this).scrollTop() < maxScroll) {
         if (!$("#filtersWrapper").is(":visible")) {
           $("#filtersWrapper").fadeIn();
@@ -355,7 +356,7 @@ var renderPlayerCountOptions = function() {
           // grey out the option because the other player doesn't have data for this player count
           optionsRadioHtml += '  disabled';
         }
-        optionsRadioHtml += '>' + playerCount + '<br>';
+        optionsRadioHtml += '>' + playerCount + '';
       }
     });
   }
@@ -389,15 +390,13 @@ var renderNotLossComparisonPlayerSelect = function() {
   comparisonPlayerSelect.selectedIndex = selectedIndex;
 };
 
-
-const pieWidth = 360;
-const pieHeight = 360;
-const outerRadius = Math.min(pieWidth, pieHeight) / 2;
+var pieDiameter = 256;
+const outerRadius = Math.min(pieDiameter, pieDiameter) / 2;
 const innerRadius = outerRadius / 2;
 const verticalPadding = 32;
 
-const svgHeight = pieHeight + verticalPadding;
-const svgWidth = pieWidth;
+const svgHeight = pieDiameter + verticalPadding;
+const svgWidth = pieDiameter;
 
 const pie = d3.pie()
   .value(function(d) { return d.value; })
@@ -525,21 +524,8 @@ var initializeNotLossSection = function() {
 };
 
 var renderNotLossSection = function() {
-  // to prevent hard-coding these #s
-  const pieWidth = 350;
-  const pieHeight = 350;
-  const outerRadius = Math.min(pieWidth, pieHeight) / 2;
-  const innerRadius = outerRadius / 2;
-
-  const legendRectSize = 20;
-  const legendSpacing = 4;
-  const legendTextWidth = 64;
-  const legendPadding = 20;
-
-  const svgHeight = pieHeight; // + legendPadding
-  const svgWidth = pieWidth;
-
   var dataset = getNotLossChartDataset();
+
   if (selectedPlayerId) {
     var playerAnalysis = model.stats.playerAnalyses[selectedPlayerId];
     var notLossCount = playerAnalysis.notLossCounts[selectedPlayerCount];
@@ -657,7 +643,7 @@ var initializeStatComparisonSection = function() {
       return d.isSelectedPlayer ? "bold" : "normal"
     });
 
-  var maxBarWidth = $("#statComparison").width() - 168 - 32;
+  var maxBarWidth = $("#statComparison").width() - 168;
   var maxValue = dataset.reduce(function(max, curr) { return Math.max(max, Math.abs(curr.value)); }, 0);
   var barWidthMultiplier = maxBarWidth / maxValue;
 
@@ -716,7 +702,7 @@ var renderStatComparisonSection = function() {
       return d.isSelectedPlayer ? "bold" : "normal"
     });
 
-  var maxBarWidth = $("#statComparison").width() - 168 - 32;
+  var maxBarWidth = $("#statComparison").width() - 168;
   var maxValue = dataset.reduce(function(max, curr) { return Math.max(max, Math.abs(curr.value)); }, 0);
   var barWidthMultiplier = maxBarWidth / maxValue;
   
