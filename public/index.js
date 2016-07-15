@@ -27,6 +27,9 @@ $(document).ready(function() {
   // set up player stats
   initializeNotLossSection();
   $("#playerSelect").change(function() {
+    var playerSelect = document.getElementById("playerSelect");
+    selectedPlayerId = playerSelect.options[playerSelect.selectedIndex].value;
+
     selectedPlayerCount = 0;
     selectedNotLossComparisonPlayerId = "none";
     renderPlayerSelect();
@@ -122,8 +125,12 @@ var render = function(domainId, startDate, endDate) {
     $(".noDataMessage").hide();
     $(".tableWrapper").hide();
 
-    // we don't know what players there are, so just reset selected player/count
-    document.getElementById("playerSelect").selectedIndex = 0;
+    // if the currently selected player is not in the new selection, reset
+    var playerSelect = document.getElementById("playerSelect");
+    if (Object.keys(model.players).indexOf(playerSelect.options[playerSelect.selectedIndex].value) < 0) {
+      selectedPlayerId = undefined;
+    }
+    // always just reset selected player count and comparison player
     selectedPlayerCount = 0;
     selectedNotLossComparisonPlayerId = "none";
 
@@ -316,21 +323,20 @@ var renderFilters = function() {
 };
 
 var renderPlayerSelect = function() {
-  // First, save the selected player id
-  var playerSelect = document.getElementById("playerSelect");
-  selectedPlayerId = playerSelect.options[playerSelect.selectedIndex].value;
-  selectedPlayerId = selectedPlayerId === "0" ? undefined : selectedPlayerId;
-
   // render player dropdown
   // first clear out existing dropdown
-  $("#playerSelect").html('<option value="0">Select a player</option>');
+  var playerSelectHtml = '<option value="0">Select a player</option>';
   var playerSelect = document.getElementById("playerSelect");
   Object.keys(model.players).sort(function(playerId, otherId) {
     return model.players[playerId].name.localeCompare(model.players[otherId].name);
-  }).forEach(function(playerId, i) {
-    playerSelect.options[i + 1] = new Option(model.players[playerId].name, playerId,
-      false, selectedPlayerId == playerId);
+  }).forEach(function(playerId) {
+    playerSelectHtml += '<option value="' + playerId + '"';
+    if (playerId == selectedPlayerId) {
+      playerSelectHtml += ' selected';
+    }
+    playerSelectHtml += '>' + model.players[playerId].name + '</option>';
   });
+  $("#playerSelect").html(playerSelectHtml);
 };
 
 // Uses the current value of selectedPlayerCount
@@ -624,6 +630,27 @@ var getComparisonDataset = function() {
   return result;
 }
 
+var comparisonChartBarColor = function(d) {
+  if (comparisonStat == "notLossScore" || comparisonStat == "playScore") {
+    if (d.value >= 0) {
+      return d.isSelectedPlayer ? COLOR.lightGreen : COLOR.green;
+    } else {
+      return d.isSelectedPlayer ? COLOR.lightRed : COLOR.red;
+    }
+  } else {
+    return d.isSelectedPlayer ? COLOR.lightTeal : COLOR.teal;
+  }
+};
+
+var comparisonChartBarWidth = function(d) {
+  var maxBarWidth = $("#statComparison").width() - 168;
+  var maxValue = dataset.reduce(function(max, curr) {
+    return Math.max(max, Math.abs(curr.value));
+  }, 0);
+  var barWidthMultiplier = maxBarWidth / maxValue; 
+  return 4 + Math.abs(d.value) * barWidthMultiplier + "px";
+};
+
 var initializeStatComparisonSection = function() {
   dataset = getComparisonDataset();
 
@@ -642,26 +669,14 @@ var initializeStatComparisonSection = function() {
       return d.isSelectedPlayer ? "bold" : "normal"
     });
 
-  var maxBarWidth = $("#statComparison").width() - 168;
-  var maxValue = dataset.reduce(function(max, curr) { return Math.max(max, Math.abs(curr.value)); }, 0);
-  var barWidthMultiplier = maxBarWidth / maxValue;
-
   var bars = d3.select("#comparisonChartBars")
     .selectAll(".bar")
     .data(dataset)
     .enter()
     .append("div")
     .attr("class", "bar")
-    .style("background-color", function(d) {
-      if (comparisonStat == "notLossScore" || comparisonStat == "playScore") {
-        return d.value >= 0 ? COLOR.green : COLOR.red;
-      } else {
-        return d.isSelectedPlayer ? COLOR.goldenrod : COLOR.teal;
-      }
-    })
-    .style("width", function(d) {
-      return 4 + Math.abs(d.value) * barWidthMultiplier + "px";
-    });
+    .style("background-color", comparisonChartBarColor)
+    .style("width", comparisonChartBarWidth);
 
   var $tooltip = $(".comparisonChartTooltip");
   $tooltip.hide();
@@ -701,10 +716,6 @@ var renderStatComparisonSection = function() {
       return d.isSelectedPlayer ? "bold" : "normal"
     });
 
-  var maxBarWidth = $("#statComparison").width() - 168;
-  var maxValue = dataset.reduce(function(max, curr) { return Math.max(max, Math.abs(curr.value)); }, 0);
-  var barWidthMultiplier = maxBarWidth / maxValue;
-  
   var bars = d3.select("#comparisonChartBars")
     .selectAll(".bar")
     .data(dataset);
@@ -712,20 +723,8 @@ var renderStatComparisonSection = function() {
   bars.exit().remove();
   bars
     .transition(900)
-    .style("background-color", function(d) {
-      if (comparisonStat == "notLossScore" || comparisonStat == "playScore") {
-        if (d.value >= 0) {
-          return d.isSelectedPlayer ? COLOR.lightGreen : COLOR.green;
-        } else {
-          return d.isSelectedPlayer ? COLOR.lightRed : COLOR.red;
-        }
-      } else {
-        return d.isSelectedPlayer ? COLOR.lightTeal : COLOR.teal;
-      }
-    })
-    .style("width", function(d) {
-      return 4 + Math.abs(d.value) * barWidthMultiplier + "px";
-    });
+    .style("background-color", comparisonChartBarColor)
+    .style("width", comparisonChartBarWidth);
 };
 
 var rankPlayerIds = function(scores, stat) {
