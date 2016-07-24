@@ -419,7 +419,8 @@ var getNotLossChartDataset = function(losses, notLosses, delta) {
     { label: "Rate delta", color: "#bbbbbb", value: 0, legendString: "Rate delta" },
     { label: "Not losses", color: "#999999", value: 10, legendString: "Not losses" }
   ];
-  if (losses || notLosses) { // one (but not both) may be zero
+  if (losses !== undefined && notLosses !== undefined) {
+    // both may be zero (one not loss percent is 0, the other is 100)
     result[0].value = losses;
     result[0].color = COLOR.goldenrod;
 
@@ -774,7 +775,7 @@ var dateFromDropdownString = function(dateString) {
 }
 
 var dayMonthString = function(date) {
-  return (date.getMonth() + 1) + "/" + date.getDate();
+  return (date.getUTCMonth() + 1) + "/" + date.getUTCDate();
 };
 
 var easeOutQuad = function(x, t, b, c, d) {
