@@ -29,7 +29,7 @@ body
     div(class="content")
       h1 Scores
 
-      h2(class="rankingsHeader") Rankings
+      h2(class="rankingsHeader sectionSpacer") Rankings
       div(class="noRankingsMessage noDataMessage") There are no games in the selected date range (no rankings)
       div(class="scoreTableWrapper tableWrapper")
         table(class="scoreTable")
@@ -46,22 +46,21 @@ body
               td(class="streakCol sortableHeader", data-stat-name="streak") Streak
           tbody
 
-      h2(class="recentGamesHeader") Recent games
+      h2(class="recentGamesHeader sectionSpacer") Recent games
       div(class="noRecentGamesMessage noDataMessage") There are no games in the selected date range
       div(class="recentGamesTableWrapper tableWrapper")
         table(class="recentGamesTable")
 
       
       div(id="playerAnalysis")
-        div(class="playerSelectWrapper")
-          span(class="playerSelectLabel label") Player
-          select(id="playerSelect", name="playerId")
-            option(value=0) Select a player
-        
+        div(class="playerAnalysisHeaderWrapper")
+          h1 Player analysis
+          div(class="playerSelectWrapper")
+            span(class="playerSelectLabel label") Player
+            select(id="playerSelect", name="playerId")
+              option(value=0) Select a player
 
-        h1 Player analysis
-
-        div(id="notLossRatio")
+        div(id="notLossRatio" class="analysisSection")
           h2 Not loss ratio
           div(class="notLossesChartWrapper")
             div(id="notLossesChart")
@@ -82,6 +81,34 @@ body
                 option(value="none") None
                 option(value="expected") Random rate
             div(id="notLossesPlayerCount")
+
+        div(id="statComparison", class="analysisSection")
+          div(class="comparisonHeaderWrapper")
+            h2 Stat comparison
+            div(id="comparisonSortOptions")
+              label Sort by
+              label
+                input(type="radio", name="comparisonSort", value="name")
+                | Player name
+              label 
+                input(type="radio", name="comparisonSort", value="stat", checked)
+                | Stat value
+
+          div(class="comparisonChartWrapper")
+            div(class="comparisonChartNamesWrapper")
+              div(class="barLabelHeader barChartHeader") Player name
+              div(id="comparisonChartNames")
+            div(class="comparisonChartBarsWrapper")
+              select(id="comparisonStatSelect" class="barLabelHeader")
+                option(value="plays") Plays
+                option(value="losses") Losses
+                option(value="notLosses") Not losses
+                option(value="notLossScore" selected) Not loss score
+                option(value="playScore") Play score
+                option(value="notLossPercent") Not loss %
+                option(value="streak") Streak
+              div(id="comparisonChartBars")
+
 
 
   section(id="rules")
@@ -139,7 +166,7 @@ body
     div(id="playScoreTooltip" class="tooltip") -1 point per loss <br> + (1/# of players) per game
     div(id="totalTooltip" class="tooltip") Not loss score for the day:<br>-1 point per loss <br> + (1/# of non-losers) per not loss
 
-    div(class="pieChartTooltip")
+    div(class="pieChartTooltip chartTooltip")
       div(class="tooltipSection noComparison")
         div(class="tooltipLabel")
         div(class="tooltipCount")
@@ -154,3 +181,7 @@ body
           div(class="percent")
       div(class="tooltipSection delta")
         div(class="tooltipText")
+
+    div(class="comparisonChartTooltip chartTooltip")
+      div(class="tooltipLabel")
+      div(class="tooltipValue")
