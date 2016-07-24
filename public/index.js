@@ -644,7 +644,7 @@ var dateFromDropdownString = function(dateString) {
 }
 
 var dayMonthString = function(date) {
-  return (date.getMonth() + 1) + "/" + date.getDate();
+  return (date.getUTCMonth() + 1) + "/" + date.getUTCDate();
 };
 
 var easeOutQuad = function(x, t, b, c, d) {
