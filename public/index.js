@@ -309,7 +309,9 @@ var renderRecentGamesTable = function(games, players) {
 
 var renderFilters = function() {
   var domainSelect = document.getElementById("domainSelect");
-  Object.keys(model.domains).forEach(function(domainId, i) {
+  Object.keys(model.domains).sort(function(domainId, otherId) {
+    return model.domains[domainId].localeCompare(model.domains[otherId]);
+  }).forEach(function(domainId, i) {
     domainSelect.options[i + 1] = new Option(model.domains[domainId], domainId,
       false, model.domainId == domainId);
   });
