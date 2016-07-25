@@ -144,7 +144,7 @@ tbody tr:hover  {
 .scoreTable .streakCol { min-width: 48px; }
 
 .recentGamesTable .gameScoreCell { min-width: 80px; max-width: 120px; }
-.recentGamesTable .totalScoreCell { max-width: 64px; }  
+.recentGamesTable .totalScoreCell { min-width: 64px; }  
 .recentGamesTable tbody .playerCol { padding-left: 16px; min-width: 216px; }
 
 .tableWrapper {
