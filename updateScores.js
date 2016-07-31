@@ -243,7 +243,7 @@ var addGame = function(connection) {
     input: process.stdin,
     output: process.stdout
   });
-  rl.question("  Enter game date ('today', MM/DD, or MM/DD/YYYY): ", function(dateInput) {
+  rl.question("  Enter game date ('today', 'yesterday', MM/DD, or MM/DD/YYYY): ", function(dateInput) {
     rl.close();
     var dateString = parseDateInput(dateInput);
     if (!dateString) {
@@ -382,6 +382,11 @@ var promptForPlayerName = function(connection, gameDetails) {
 var parseDateInput = function(dateInput) {
   if (dateInput === "today") {
     return sqlDateStringFromDate(new Date());
+  } else if (dateInput === "yesterday") {
+    var yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    console.log(sqlDateStringFromDate(yesterday));
+    return sqlDateStringFromDate(yesterday);
   }
   var dateInputSplit = dateInput.split("/");
   if (dateInputSplit.length === 2 || dateInputSplit.length === 3) {
