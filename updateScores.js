@@ -385,7 +385,6 @@ var parseDateInput = function(dateInput) {
   } else if (dateInput === "yesterday") {
     var yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    console.log(sqlDateStringFromDate(yesterday));
     return sqlDateStringFromDate(yesterday);
   }
   var dateInputSplit = dateInput.split("/");
