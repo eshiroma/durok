@@ -73,7 +73,7 @@ $(document).ready(function() {
   var domain = getUrlParameter('domain');
   var startDate = getUrlParameter('start');
   var endDate = getUrlParameter('end');
-  refineUrl();
+  window.history.pushState(null, null, '/');
 
   render(domain, startDate, endDate);
 });
@@ -802,12 +802,3 @@ var getUrlParameter = function getUrlParameter(sParam) {
     }
   }
 };
-
-var refineUrl = function() {
-  var url = window.location.href;
-  // get url after/  
-  var value = url.substring(url.lastIndexOf('/') + 1);
-  // the part after before ?
-  return value.split("?")[0];   
-};
-
