@@ -69,8 +69,13 @@ $(document).ready(function() {
     renderStatComparisonSection();
   });
 
-  // initial page render
-  render();
+  // initial page render: read in any given url parameters, and then clear them
+  var domain = getUrlParameter('domain');
+  var startDate = getUrlParameter('start');
+  var endDate = getUrlParameter('end');
+  refineUrl();
+
+  render(domain, startDate, endDate);
 });
 
 var model;
@@ -783,3 +788,26 @@ var dayMonthString = function(date) {
 var easeOutQuad = function(x, t, b, c, d) {
   return -c *(t/=d)*(t-2) + b;
 };
+
+var getUrlParameter = function getUrlParameter(sParam) {
+  var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+    sURLVariables = sPageURL.split('&'),
+    sParameterName,
+    i;
+
+  for (i = 0; i < sURLVariables.length; i++) {
+    sParameterName = sURLVariables[i].split('=');
+    if (sParameterName[0] === sParam) {
+        return sParameterName[1] === undefined ? true : sParameterName[1];
+    }
+  }
+};
+
+var refineUrl = function() {
+  var url = window.location.href;
+  // get url after/  
+  var value = url.substring(url.lastIndexOf('/') + 1);
+  // the part after before ?
+  return value.split("?")[0];   
+};
+
