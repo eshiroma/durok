@@ -377,12 +377,16 @@ var renderNotLossComparisonPlayerSelect = function() {
   
   if (selectedPlayerId) {
     // only include players with data for the selected # of games
-    Object.keys(model.players).forEach(function(otherPlayerId, i) {
-      var numberOfGamesForPlayerCount = model.stats.playerAnalyses[otherPlayerId].gameCounts[selectedPlayerCount];
-      if (otherPlayerId != selectedPlayerId && numberOfGamesForPlayerCount) {
-        var playerName = model.players[otherPlayerId].name;
-        selectHtml += '<option value="' + otherPlayerId + '">' + playerName + '</option>';
-      }
+    const comparisonPlayers = Object.keys(model.players).filter(function(playerId) {
+      var numberOfGamesForPlayerCount = model.stats.playerAnalyses[playerId].gameCounts[selectedPlayerCount];
+      return playerId != selectedPlayerId && numberOfGamesForPlayerCount;
+    }).sort(function(id, otherId) {
+      return model.players[id].name.localeCompare(model.players[otherId].name);
+    });
+
+    comparisonPlayers.forEach(function(playerId) {
+      const playerName = model.players[playerId].name;
+      selectHtml += '<option value="' + playerId + '">' + playerName + '</option>';
     });
   }
   $("#notLossesComparisonPlayerSelect").html(selectHtml);

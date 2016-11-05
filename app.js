@@ -49,6 +49,8 @@ app.get("/gameData", function(req, res) {
 });
 
 var getDomainId = function(domainParameter) {
+  if (!domainParameter) return undefined;
+
   var domainId = Number(domainParameter);
   if (isNaN(domainId)) {
     domainId = model.getDomainIdByName(domainParameter, true);
