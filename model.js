@@ -130,6 +130,29 @@ function Model() {
     return result;
   };
 
+  this.hasDomainId = function(domainId) {
+    return Object.keys(domains).some(function(currDomainId) {
+      return currDomainId == domainId;
+    });
+  };
+
+  this.getDomainIdByName = function(domainName, laxMatch) {
+    const removalRegex = /[\s\-_]/;
+    const laxDomainName = domainName.toLowerCase().replace(removalRegex, '');
+    // Takes the first (hopefully only) applicable element, or undefined if none
+    return Object.keys(domains).filter(function(currDomainId) {
+      const currDomainName = domains[currDomainId].name;
+      if (laxMatch) {
+        const laxCurrDomainName =
+            currDomainName.toLowerCase().replace(removalRegex, '');
+        return laxDomainName == laxCurrDomainName;
+      } else {
+        if (domainName == currDomainName) console.log("match!");
+        return domainName == currDomainName;
+      }
+    })[0];
+  };
+
   // playerId -> name
   this.getPlayers = function(domainId, startDate, endDate) {
     var result = {};

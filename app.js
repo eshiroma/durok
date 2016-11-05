@@ -23,7 +23,7 @@ app.get("/", function(req, res) {
 });
 
 app.get("/gameData", function(req, res) {
-  var domainId = req.query.domain ? Number(req.query.domain) : undefined;
+  var domainId = getDomainId(req.query.domain);
   var startDate = req.query.start ? new Date(Number(req.query.start)) : new Date(0);
   var oldStartDateDay = startDate.getDate();
   startDate = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
@@ -47,6 +47,16 @@ app.get("/gameData", function(req, res) {
     stats: playerAnalyses
   });
 });
+
+var getDomainId = function(domainParameter) {
+  var domainId = Number(domainParameter);
+  if (isNaN(domainId)) {
+    domainId = model.getDomainIdByName(domainParameter, true);
+    return domainId ? Number(domainId) : undefined;
+  } else { // use the given number if it is a valid ID
+    return model.hasDomainId(domainId) ? domainId : undefined;
+  }
+};
 
 model.init(function() {
   app.listen(port);
