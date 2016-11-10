@@ -1,6 +1,7 @@
 var Model = require("./model");
 var express = require("express");
 var path = require('path');
+var favicon = require('serve-favicon');
 
 var app = express();
 var model = new Model();
