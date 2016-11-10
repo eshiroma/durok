@@ -147,9 +147,8 @@ tbody tr:hover  {
 .recentGamesTable .totalScoreCell { min-width: 64px; }  
 .recentGamesTable tbody .playerCol { padding-left: 16px; min-width: 216px; }
 
-.tableWrapper {
-  overflow-x: scroll;
-}
+.tableWrapper { overflow: hidden; }
+.recentGamesTableWrapper { overflow-x: scroll; }
 
 ul {
   padding: 0;
