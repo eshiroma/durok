@@ -6,7 +6,7 @@ var app = express();
 var model = new Model();
 var port = process.env.PORT || 5000;
 
-const CACHE_UPDATE_CYCLE_MS = 15 * 60 * 1000; // 15 mins   
+const CACHE_UPDATE_CYCLE_MS = 3 * 60 * 1000; // 3 mins   
 
 app.set("view engine", "jade");
 app.use(express.static(path.join(__dirname, 'public')));
