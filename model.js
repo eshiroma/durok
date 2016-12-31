@@ -271,18 +271,17 @@ function Model() {
       scores[playerId].notLossPercent = 100 * scores[playerId].notLosses / scores[playerId].plays;
     }
 
-    // compute ranks
+    // compute ranks based on not loss score (if not loss score is equal, rank is equal)
     var rankedPlayerIds = Object.keys(playerInfo).sort(function(playerId, otherId) {
-      if (scores[otherId].notLossScore != scores[playerId].notLossScore) {
-        return scores[otherId].notLossScore - scores[playerId].notLossScore;
-      } else if (scores[otherId].playScore != scores[playerId.playScore]) {
-        return scores[otherId].playScore - scores[playerId].playScore;
-      } else {
-        return scores[otherId].plays - scores[playerId].plays;
-      }
+      return scores[otherId].notLossScore - scores[playerId].notLossScore;
     });
     rankedPlayerIds.forEach(function(playerId, i) {
-      scores[playerId].rank = i + 1;
+      const previousPlayerId = rankedPlayerIds[i - 1];
+      if (scores[previousPlayerId].notLossScore == scores[playerId].notLossScore) {
+        scores[playerId].rank = scores[previousPlayerId].rank;
+      } else {
+        scores[playerId].rank = i + 1;
+      }
     });
 
     // compute not loss streaks
