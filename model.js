@@ -276,6 +276,11 @@ function Model() {
       return scores[otherId].notLossScore - scores[playerId].notLossScore;
     });
     rankedPlayerIds.forEach(function(playerId, i) {
+      if (i == 0) {
+        scores[playerId].rank = 1;
+        return;
+      }
+
       const previousPlayerId = rankedPlayerIds[i - 1];
       if (scores[previousPlayerId].notLossScore == scores[playerId].notLossScore) {
         scores[playerId].rank = scores[previousPlayerId].rank;
