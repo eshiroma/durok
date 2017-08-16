@@ -68,7 +68,7 @@ passwordRl.question("", function(password) {
   passwordRl.close();
 
   var connection = mysql.createConnection({
-    host: "durok0.ckugbtodolrs.us-west-2.rds.amazonaws.com",
+    host: "durok1.cvtdzcuchlrs.us-east-2.rds.amazonaws.com",
     user: "durok_private",
     password: password,
     database: "durok"
