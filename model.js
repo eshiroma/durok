@@ -1,7 +1,7 @@
 var mysql = require('mysql');
 
 var connectionParams = {
-  host: 'durok0.ckugbtodolrs.us-west-2.rds.amazonaws.com',
+  host: 'durok1.cvtdzcuchlrs.us-east-2.rds.amazonaws.com',
   user: 'durok_public',
   password: 'durokrules',
   database: 'durok'
